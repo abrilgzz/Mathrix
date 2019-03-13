@@ -1,0 +1,11 @@
+program Mathrix:
+
+int test = 1;
+
+func int testFunction (int x){
+    x = 2 + 2;
+}
+
+main {
+    y = 1;
+}
