@@ -13,7 +13,7 @@ import ply.lex as lex
 tokens = [
     'ID', 'CTE_I', 'CTE_D', 'CTE_S', 
     'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE',
-    'EQUAL_TO', 'NOT_EQUAL_TO', 
+    'IS_EQUAL_TO', 'NOT_EQUAL_TO', 
     'GREATER_THAN', 'LESS_THAN', 
     'GREATER_THAN_OR_EQUAL_TO', 'LESS_THAN_OR_EQUAL_TO',
     'AND', 'OR',
@@ -21,16 +21,14 @@ tokens = [
     'LEFT_PAR', 'RIGHT_PAR',
     'LEFT_BRACE', 'RIGHT_BRACE',
     'LEFT_BRACKET', 'RIGHT_BRACKET',
-    'COLON', 'SEMICOLON', 'COMMA'
+    'SEMICOLON', 'COMMA'
 ]
 
 # -----------------------------------------------------------------------------
 # Dictionary of Reserved words
 # -----------------------------------------------------------------------------
 reservedWords = {
-    'Mathrix': 'MATHRIX',
     'Main': 'MAIN',
-    'program': 'PROGRAM',
     'if': 'IF',
     'else': 'ELSE',
     'while': 'WHILE',
@@ -80,7 +78,6 @@ t_LEFT_BRACE  = r'{'
 t_RIGHT_BRACE  = r'}'
 t_LEFT_BRACKET  = r'\['
 t_RIGHT_BRACKET  = r'\]'
-t_COLON  = r':'
 t_SEMICOLON  = r'\;'
 t_COMMA  = r','
 
@@ -103,24 +100,25 @@ def t_CTE_D(t):
 t_CTE_S = r'\".*\"'
 
 # New lines and errors
-
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
 
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    print("Illegal character '{}' at: {}".format(t.value[0], t.lexer.lineno))
     t.lexer.skip(1)
 
 # Build the lexer
 lexer = lex.lex()
 
-file = open("example.txt")
-lexer.input(file.read())
+#### Testing the lexer 
+# file = open("example.txt")
+# lexer.input(file.read())
 
 # Get tokens
-while True:
-    tok = lexer.token()
-    if not tok:
-        break
-print("\n")
+# while True:
+#     tok = lexer.token()
+#     if not tok:
+#         break
+# print("\n")
+

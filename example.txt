@@ -1,11 +1,8 @@
-program Mathrix:
+int x;
 
-int test = 1;
-
-func int testFunction (int x){
-    x = 2 + 2;
+function double test1 (int y){
+    return x+y;
 }
-
-main {
-    y = 1;
+Main {
+    return test1(1);
 }
