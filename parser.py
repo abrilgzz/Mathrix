@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Abril Marina González Ramírez A01280904
 # Juan Luis Flores Garza A01280767
-# 12/03/2019
+# 18/03/2019
 
 # Parser
 # References: https://github.com/dabeaz/ply
@@ -12,39 +12,48 @@ import ply.yacc as yacc
 from scanner import tokens
 
 
-def p_program(p):
-    '''program : PROGRAM MATHRIX COLON program1 main
+def p_start(p):
+    '''start : global_variable_declaration
     '''
 
-# Checar
-def p_program1(p):
-    '''program1 : program1 function_block
-    | program1 vars
+def p_global_declaration(p):
+    '''global_declaration : var_declaration global_declaration
+    | function_declaration
+    '''
+
+# Variable declaration
+def p_var_declaration(p):
+    '''var_declaration : var_type ID array SEMICOLON
+    '''
+
+def p_array(p):
+    '''array : LEFT_BRACKET expression RIGHT_BRACKET array
     | empty
     '''
 
-# Checar
-def p_vars(p):
-    '''vars : var_type vars2 SEMICOLON vars3
-    '''
-    
-def p_vars2(p):
-    '''vars2 : ID vars3 
-    | ID vars4
+# Function declaration
+def p_func_declaration(p):
+    '''func_declaration : func_signature func_declaration
+    | main
     '''
 
-def p_vars3(p):
-    '''vars3 : ASSIGN var_cte vars5
+#Example function int [2][3] testFunction(int Y)
+def p_func_signature(p):
+    '''func_signature : FUNCTION func_type array func_signature_1
     '''
 
-def p_vars4(p):
-    '''vars4 : LEFT_BRACKET CTE_I RIGHT_BRACKET LEFT_BRACKET CTE_I RIGHT_BRACKET vars2
-    | SEMICOLON
+def p_func_signature_1(p):
+    '''func_signature_1 : ID LEFT_PAR param_declaration RIGHT_PAR block
     '''
 
-def p_vars5(p):
-    '''vars5 : SEMICOLON
-    | COMMA vars2
+def p_param_declaration(p):
+    '''param_declaration : var_type array ID param_declaration_1
+    | empty
+    '''
+
+def p_param_declaration_1(p):
+    '''param_declaration_1 : COMMA var_type array ID param_declaration_1
+    | empty
     '''
 
 def p_var_type(p):
@@ -59,24 +68,13 @@ def p_var_cte(p):
     | CTE_D
     | cte_b
     | CTE_S
-    | ID LEFT_BRACKET CTE_I RIGHT_BRACKET LEFT_BRACKET CTE_I RIGHT_BRACKET
+    | ID array
+    | function_call
     '''
 
 def p_cte_b(p):
     '''cte_b : TRUE
     | FALSE
-    '''
-
-# Checar
-def p_function_block(p):
-    '''function_block : FUNCTION func_type ID LEFT_PAR function_block2 RIGHT_PAR block function_block SEMICOLON
-    | empty
-    '''
-
-def p_function_block2(p):
-    '''function_block2 : var_type ID
-    | var_type ID COMMA
-    | empty
     '''
 
 def p_func_type(p):
@@ -88,40 +86,46 @@ def p_func_type(p):
     '''
 
 def p_block(p):
-    '''block : LEFT_BRACE block2 RIGHT_BRACE
+    '''block : LEFT_BRACE block_1 
     '''
 
-def p_block2(p):
-    '''block2 : block2 vars statement
-    | block2 statement
-    | empty
+def p_block_1(p):
+    '''block_1 : statement block_1
+    | block_2 
     '''
 
+# Added RETURN to block's grammar; values can be returned at any point within block
+def p_block_2(p):
+    '''block_2 : RETURN expression SEMICOLON block_3
+    | block_3
+    '''
+
+def p_block_3(p):
+    '''block_3 : RIGHT_BRACE
+    '''
+
+# function_call example: x = function1() + function2();
 def p_statement(p):
-    '''statement : assignment
+    '''statement : var_declaration
+    | assignment
     | condition
-    | call_function
-    | return_function
+    | function_call SEMICOLON
     | while_cycle
     | read
     | write
     '''
 
 def p_assignment(p):
-    '''assignment : ID assignment2 expression SEMICOLON
+    '''assignment : ID var_type ASSIGN expression SEMICOLON
     '''
 
-def p_assignment2(p):
-    '''assignment2 : ASSIGN
-    | LEFT_BRACKET CTE_I RIGHT_BRACKET LEFT_BRACKET CTE_I RIGHT_BRACKET ASSIGN
-    '''
 
 def p_expression(p):
-    '''expression : exp expression1
+    '''expression : exp expression_1
     '''
 
-def p_expression1(p):
-    '''expression1 : EQUAL_TO exp
+def p_expression_1(p):
+    '''expression_1 : EQUAL_TO exp
     | NOT_EQUAL_TO exp
     | GREATER_THAN exp
     | LESS_THAN exp
@@ -133,21 +137,21 @@ def p_expression1(p):
     '''
 
 def p_exp(p):
-    '''exp : term exp1
+    '''exp : term exp_1
     '''
 
-def p_exp1(p):
-    '''exp1 : PLUS exp
+def p_exp_1(p):
+    '''exp_1 : PLUS exp
     | MINUS exp
     | empty
     '''
 
 def p_term(p):
-    '''term : factor term1
+    '''term : factor term_1
     '''
 
-def p_term1(p):
-    '''term1 : MULTIPLY term
+def p_term_1(p):
+    '''term_1 : MULTIPLY term
     | DIVIDE term
     | empty
     '''
@@ -155,43 +159,39 @@ def p_term1(p):
 def p_factor(p):
     '''factor : LEFT_PAR expression RIGHT_PAR
     | var_cte
-    | factor1 var_cte
+    | factor_1 var_cte
     '''
 
-def p_factor1(p):
-    '''factor1 : PLUS
+def p_factor_1(p):
+    '''factor_1 : PLUS
     | MINUS
     | empty
     '''
 
 def p_condition(p):
-    '''condition : IF LEFT_PAR expression RIGHT_PAR block condition2
+    '''condition : IF LEFT_PAR expression RIGHT_PAR block condition_1
     '''
 
-def p_condition2(p):
-    '''condition2 : ELSE block
-    '''
-
-def p_call_function(p):
-    '''call_function : ID LEFT_PAR call_function2 RIGHT_PAR SEMICOLON
-    '''
-
-def p_call_function2(p):
-    '''call_function2 : ID call_function3
-    | exp call_function3
-    '''
-
-def p_call_function3(p):
-    '''call_function3 : COMMA call_function2
+def p_condition_1(p):
+    '''condition_1 : ELSE block
     | empty
     '''
 
-def p_return_function(p):
-    '''return_function : RETURN exp SEMICOLON
+def p_function_call(p):
+    '''function_call : ID LEFT_PAR param_call RIGHT_PAR 
+    '''
+
+def p_param_call(p):
+    '''param_call : expression param_call_1
+    '''
+
+def p_param_call_1(p):
+    '''param_call_1 : COMMA param_call_1
+    | empty
     '''
 
 def p_while_cycle(p):
-    '''while_cycle : WHILE LEFT_BRACE exp RIGHT_BRACE block
+    '''while_cycle : WHILE LEFT_PAR expression RIGHT_PAR block
     '''
 
 def p_read(p):
@@ -203,7 +203,7 @@ def p_write(p):
     '''
 
 def p_main(p):
-    '''main : MAIN block SEMICOLON
+    '''main : MAIN block 
     '''
 
 def p_empty(p):

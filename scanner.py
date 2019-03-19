@@ -62,7 +62,7 @@ t_MINUS  = r'-'
 t_MULTIPLY  = r'\*'
 t_DIVIDE    = r'/'
 # Relational Operators
-t_EQUAL_TO  = r'='
+t_IS_EQUAL_TO  = r'=='
 t_NOT_EQUAL_TO  = r'!='
 t_GREATER_THAN  = r'>'
 t_LESS_THAN  = r'<'
