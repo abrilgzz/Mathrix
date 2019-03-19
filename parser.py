@@ -13,17 +13,19 @@ from scanner import tokens
 
 
 def p_start(p):
-    '''start : global_variable_declaration
+    '''start : global_declaration
     '''
+    print('COMPILED')
 
 def p_global_declaration(p):
     '''global_declaration : var_declaration global_declaration
-    | function_declaration
+    | func_declaration
     '''
 
 # Variable declaration
 def p_var_declaration(p):
     '''var_declaration : var_type ID array SEMICOLON
+    | empty
     '''
 
 def p_array(p):
@@ -116,7 +118,7 @@ def p_statement(p):
     '''
 
 def p_assignment(p):
-    '''assignment : ID var_type ASSIGN expression SEMICOLON
+    '''assignment : var_type ID ASSIGN expression SEMICOLON
     '''
 
 
@@ -125,7 +127,7 @@ def p_expression(p):
     '''
 
 def p_expression_1(p):
-    '''expression_1 : EQUAL_TO exp
+    '''expression_1 : IS_EQUAL_TO exp
     | NOT_EQUAL_TO exp
     | GREATER_THAN exp
     | LESS_THAN exp
@@ -212,13 +214,31 @@ def p_empty(p):
 	pass
 
 def p_error(p):
-    print("Error")
+    print("Syntax error")
+    print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
+    sys.exit()
 
 parser_Mathrix = yacc.yacc()
 
-while True:
-    try:
-        s = input('mathrix > ')   # usar input()
-    except EOFError:
-        break
-    parser_Mathrix.parse(s)
+if __name__ == '__main__':
+
+    if len(sys.argv) > 1:
+        
+        file = sys.argv[1]
+        try:
+            f = open(file,'r')
+            data = f.read()
+            f.close()
+
+            parser_Mathrix.parse(data)
+        except EOFError:
+            print(EOFError)
+    else:
+        print("No file to test found")
+
+# while True:
+#     try:
+#         s = input('mathrix > ')   # usar input()
+#     except EOFError:
+#         break
+#     parser_Mathrix.parse(s)
