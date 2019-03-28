@@ -9,7 +9,29 @@
 
 import sys
 import ply.yacc as yacc
+
 from scanner import tokens
+
+from constants import Types
+from constants import Operations
+from constants import Errors
+
+from semanticCube import SemanticCube
+
+from funcs_table import Function
+from funcs_table import Variable
+from funcs_table import FunctionsTable
+
+funcsTable = FunctionsTable()
+
+# Global function
+Mathrix = Function('Mathrix', 'void', {})
+funcsTable._functions['Mathrix'] = Mathrix
+
+currentFunction = funcsTable._functions['Mathrix']
+currentType = ''
+
+quadruples = []
 
 
 def p_start(p):
@@ -24,10 +46,10 @@ def p_global_declaration(p):
 
 # Variable declaration
 def p_var_declaration(p):
-    '''var_declaration : var_type ID array SEMICOLON
+    '''var_declaration : var_type ID sem_add_var array SEMICOLON
     | empty
     '''
-
+    
 def p_array(p):
     '''array : LEFT_BRACKET expression RIGHT_BRACKET array
     | empty
@@ -39,13 +61,13 @@ def p_func_declaration(p):
     | main
     '''
 
-#Example function int [2][3] testFunction(int Y)
+#Example function int[2][3] testFunction(int Y)
 def p_func_signature(p):
-    '''func_signature : FUNCTION func_type array func_signature_1
+    '''func_signature : FUNCTION func_type array func_signature_1 sem_end_func
     '''
 
 def p_func_signature_1(p):
-    '''func_signature_1 : ID LEFT_PAR param_declaration RIGHT_PAR block
+    '''func_signature_1 : ID sem_add_func LEFT_PAR param_declaration RIGHT_PAR block
     '''
 
 def p_param_declaration(p):
@@ -59,10 +81,9 @@ def p_param_declaration_1(p):
     '''
 
 def p_var_type(p):
-    '''var_type : INT
-    | DOUBLE
-    | BOOL
-    | STRING
+    '''var_type : INT sem_get_type
+    | DOUBLE sem_get_type
+    | BOOL sem_get_type
     '''
 
 def p_var_cte(p):
@@ -80,11 +101,10 @@ def p_cte_b(p):
     '''
 
 def p_func_type(p):
-    '''func_type : INT
-    | DOUBLE
-    | BOOL
-    | STRING
-    | VOID
+    '''func_type : INT sem_get_type
+    | DOUBLE sem_get_type
+    | BOOL sem_get_type
+    | VOID sem_get_type
     '''
 
 def p_block(p):
@@ -118,7 +138,7 @@ def p_statement(p):
     '''
 
 def p_assignment(p):
-    '''assignment : var_type ID ASSIGN expression SEMICOLON
+    '''assignment : ID ASSIGN expression SEMICOLON
     '''
 
 
@@ -185,10 +205,11 @@ def p_function_call(p):
 
 def p_param_call(p):
     '''param_call : expression param_call_1
+    | empty
     '''
 
 def p_param_call_1(p):
-    '''param_call_1 : COMMA param_call_1
+    '''param_call_1 : COMMA param_call
     | empty
     '''
 
@@ -218,6 +239,56 @@ def p_error(p):
     print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
     sys.exit()
 
+# -----------------------------------------------------------------------------
+#   SEMANTIC RULES
+# -----------------------------------------------------------------------------
+ 
+def p_sem_get_type(p):
+    '''sem_get_type : empty
+    '''
+    global currentType
+    t = p[-1]
+    if t == 'int':
+        currentType = Types.INT
+    elif t == 'double':
+        currentType = Types.DOUBLE
+    elif t == 'bool':
+        currentType = Types.BOOL
+    elif t == 'void':
+        currentType = Types.VOID
+    else:
+        pass
+
+def p_sem_add_func(p):
+    '''sem_add_func : empty
+    '''
+    global currentFunction
+    function_ID = p[-1]
+    
+    f = Function(function_ID, currentType, {})
+    funcsTable.add_function(f)
+    currentFunction = f
+
+def p_sem_end_func(p):
+    '''sem_end_func : empty
+    '''
+    global funcsTable
+    funcsTable._functions[currentFunction.function_ID].varsTable.clear()
+
+def p_sem_add_var(p):
+    '''sem_add_var : empty
+    '''
+    v = Variable(p[-1], currentType)
+
+    #print(p[-1])
+
+    global funcsTable, currentFunction
+
+    funcsTable.add_variable(v, currentFunction)
+    # print(funcsTable._functions[currentFunction.function_ID].varsTable)
+
+
+
 parser_Mathrix = yacc.yacc()
 
 if __name__ == '__main__':
@@ -242,3 +313,12 @@ if __name__ == '__main__':
 #     except EOFError:
 #         break
 #     parser_Mathrix.parse(s)
+
+
+
+
+
+    
+
+
+        

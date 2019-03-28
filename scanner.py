@@ -38,11 +38,21 @@ reservedWords = {
     'int': 'INT',
     'double': 'DOUBLE',
     'bool': 'BOOL',
-    'string': 'STRING',
     'true': 'TRUE',
     'false': 'FALSE',
     'read': 'READ',
-    'write': 'WRITE'
+    'write': 'WRITE',
+    # Special functions
+    'find_determinant': 'FIND_DETERMINANT',
+    'transpose_matrix': 'TRANSPOSE_MATRIX',
+    'print_matrix': 'PRINT_MATRIX',
+    'multiply_matrix': 'MULTIPLY_MATRIX',
+    'swap_rows': 'SWAP_ROWS',
+    'add_rows': 'ADD_ROWS',
+    'multiply_rows': 'MULTIPLY_ROWS',
+    'swap_cols': 'SWAP_COLS',
+    'add_cols': 'ADD_COLS',
+    'multiply_cols': 'MULTIPLY_COLS',
 }
 
 tokens = tokens + list(reservedWords.values())
@@ -70,7 +80,7 @@ t_LESS_THAN_OR_EQUAL_TO  = r'<='
 t_AND  = r'&&'
 t_OR  = r'\|\|'
 # Assignment Operator
-t_ASSIGN  = r'='
+t_ASSIGN  = r'\='
 # Punctuators
 t_LEFT_PAR  = r'\('
 t_RIGHT_PAR  = r'\)'
@@ -97,7 +107,6 @@ def t_CTE_D(t):
     t.value = float(t.value)
     return t
 
-t_CTE_S = r'\".*\"'
 
 # New lines and errors
 def t_newline(t):
