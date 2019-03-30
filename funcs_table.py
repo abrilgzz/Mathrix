@@ -1,5 +1,6 @@
 from variable import Variable
 from function import Function
+from pprint import *
 
 class FunctionsTable:
     # Global and Local variables and functions
