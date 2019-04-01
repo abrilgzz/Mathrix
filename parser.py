@@ -124,7 +124,7 @@ def p_block_1(p):
 
 # Added RETURN to block's grammar; values can be returned at any point within block
 def p_block_2(p):
-    '''block_2 : RETURN expression SEMICOLON block_3
+    '''block_2 : RETURN sem_push_operator expression sem_return_function SEMICOLON block_3
     | block_3
     '''
 
@@ -330,6 +330,8 @@ def p_sem_push_operator(p):
         operator_number = Operations.READ.value
     elif operator == 'write':
         operator_number = Operations.WRITE.value
+    elif operator == 'return':
+        operator_number = Operations.RETURN.value
         
     operators_stack.append(operator_number)
     # print(operator, " was pushed to operators stack with number: ", operator_number)
@@ -403,8 +405,14 @@ def p_sem_assign_value(p):
 def p_sem_read_write(p):
     '''sem_read_write : empty
     '''
-    q = read_write_quad(operators_stack, operands_stack)
+    q = one_operation_quad(operators_stack, operands_stack)
     quadruples_list.append(q)
+
+def p_sem_return_function(p):
+    '''sem_return_function : empty
+    '''
+    q = one_operation_quad(operators_stack, operands_stack)
+    quadruples_list.append(q)  
 
 parser_Mathrix = yacc.yacc()
 

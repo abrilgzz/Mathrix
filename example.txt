@@ -11,7 +11,7 @@ function int test1(int a){
     c = a + x;
 
     write(a);
-    
+
     return c;
 }
 function int test2(int x){
@@ -19,6 +19,8 @@ function int test2(int x){
     int b;
     int c;
     int d;
+
+    read(c);
 
     z = b + c * 3;
 

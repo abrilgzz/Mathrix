@@ -23,9 +23,10 @@ class Operations(IntEnum):
     # Parentheses
     LEFT_PAR = 13
     RIGHT_PAR = 14
-    # Read and write functions
+    # Read, write, return functions
     READ = 15
     WRITE = 16
+    RETURN = 17
 
     
 class Errors(IntEnum):
