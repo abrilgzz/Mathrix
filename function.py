@@ -1,8 +1,8 @@
 class Function:
-    def __init__(self, function_ID, function_TYPE, varsTable):
-        self.function_ID = function_ID
-        self.function_TYPE = function_TYPE
-        self.varsTable = varsTable
+    def __init__(self, function_id, function_type, variables_directory):
+        self.function_id = function_id
+        self.function_type = function_type
+        self.variables_directory = variables_directory
     
     def declareVar(self, variable):
-        self.varsTable[variable.var_ID] = variable.var_TYPE
+        self.variables_directory[variable.var_id] = variable.var_type

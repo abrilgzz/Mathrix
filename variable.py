@@ -1,7 +1,7 @@
 class Variable(dict):
-    def __init__(self, var_ID, var_TYPE):
-        self.var_ID = var_ID
-        self.var_TYPE = var_TYPE
+    def __init__(self, var_id, var_type):
+        self.var_id = var_id
+        self.var_type = var_type
 
     def __getattr__(self, attr):
         return self[attr]

@@ -16,22 +16,29 @@ from constants import Types
 from constants import Operations
 from constants import Errors
 
-from semanticCube import SemanticCube
+from semantic_cube import SemanticCube
 
-from funcs_table import Function
-from funcs_table import Variable
-from funcs_table import FunctionsTable
+from functions_table import Function
+from functions_table import Variable
+from functions_table import FunctionsTable
 
-funcsTable = FunctionsTable()
+from quads import *
+
+functions_directory = FunctionsTable()
 
 # Global function
-Mathrix = Function('Mathrix', 'void', {})
-funcsTable._functions['Mathrix'] = Mathrix
+Mathrix = Function('Mathrix', Types.VOID, {})
+functions_directory._functions['Mathrix'] = Mathrix
 
-currentFunction = funcsTable._functions['Mathrix']
-currentType = ''
+current_function = functions_directory._functions['Mathrix']
+current_type = Types.VOID
 
-quadruples = []
+operators_stack = []
+operands_stack = []
+types_stack = []
+
+quadruples_list = []
+temp_counter = 0
 
 
 def p_start(p):
@@ -91,7 +98,7 @@ def p_var_cte(p):
     | CTE_D
     | cte_b
     | CTE_S
-    | ID array
+    | ID sem_push_operand array 
     | function_call
     '''
 
@@ -138,7 +145,7 @@ def p_statement(p):
     '''
 
 def p_assignment(p):
-    '''assignment : ID ASSIGN expression SEMICOLON
+    '''assignment : ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON
     '''
 
 
@@ -159,28 +166,28 @@ def p_expression_1(p):
     '''
 
 def p_exp(p):
-    '''exp : term exp_1
+    '''exp : term sem_top_term exp_1
     '''
 
 def p_exp_1(p):
-    '''exp_1 : PLUS exp
-    | MINUS exp
+    '''exp_1 : PLUS sem_push_operator exp
+    | MINUS sem_push_operator exp
     | empty
     '''
 
 def p_term(p):
-    '''term : factor term_1
+    '''term : factor sem_top_factor term_1
     '''
 
 def p_term_1(p):
-    '''term_1 : MULTIPLY term
-    | DIVIDE term
+    '''term_1 : MULTIPLY sem_push_operator term
+    | DIVIDE sem_push_operator term
     | empty
     '''
 
 def p_factor(p):
-    '''factor : LEFT_PAR expression RIGHT_PAR
-    | var_cte
+    '''factor : LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    | var_cte 
     | factor_1 var_cte
     '''
 
@@ -218,11 +225,11 @@ def p_while_cycle(p):
     '''
 
 def p_read(p):
-    '''read : READ LEFT_PAR exp RIGHT_PAR SEMICOLON
+    '''read : READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     '''
 
 def p_write(p):
-    '''write : WRITE LEFT_PAR exp RIGHT_PAR SEMICOLON
+    '''write : WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON
     '''
 
 def p_main(p):
@@ -246,48 +253,141 @@ def p_error(p):
 def p_sem_get_type(p):
     '''sem_get_type : empty
     '''
-    global currentType
+    global current_type
     t = p[-1]
     if t == 'int':
-        currentType = Types.INT
+        current_type = Types.INT.value
     elif t == 'double':
-        currentType = Types.DOUBLE
+        current_type = Types.DOUBLE.value
     elif t == 'bool':
-        currentType = Types.BOOL
+        current_type = Types.BOOL.value
     elif t == 'void':
-        currentType = Types.VOID
+        current_type = Types.VOID.value
     else:
         pass
 
 def p_sem_add_func(p):
     '''sem_add_func : empty
     '''
-    global currentFunction
-    function_ID = p[-1]
+    global current_function
+    function_id = p[-1]
     
-    f = Function(function_ID, currentType, {})
-    funcsTable.add_function(f)
-    currentFunction = f
+    f = Function(function_id, current_type, {})
+    functions_directory.add_function(f)
+    current_function = f
+    #print(functions_directory)
 
 def p_sem_end_func(p):
     '''sem_end_func : empty
     '''
-    global funcsTable
-    funcsTable._functions[currentFunction.function_ID].varsTable.clear()
+    global functions_directory
+    functions_directory._functions[current_function.function_id].variables_directory.clear()
+    #print(functions_directory)
 
 def p_sem_add_var(p):
     '''sem_add_var : empty
     '''
-    v = Variable(p[-1], currentType)
-
+    v = Variable(p[-1], current_type)
     #print(p[-1])
 
-    global funcsTable, currentFunction
+    global functions_directory, current_function
+    functions_directory.add_variable(v, current_function)
+    # print(functions_directory._functions[current_function.function_id].variables_directory)
 
-    funcsTable.add_variable(v, currentFunction)
-    # print(funcsTable._functions[currentFunction.function_ID].varsTable)
 
+def p_sem_push_operator(p):
+    '''sem_push_operator : empty
+    '''
+    operator = p[-1]
+    operator_number = -1
 
+    if operator == '+':
+        operator_number = Operations.PLUS.value
+    elif operator == '-':
+        operator_number = Operations.MINUS.value
+    elif operator == '*':
+        operator_number = Operations.MULTIPLY.value
+    elif operator == '/':
+        operator_number = Operations.DIVIDE.value
+    elif operator == '==':
+        operator_number = Operations.ISEQUAL.value
+    elif operator == '!=':
+        operator_number = Operations.NOTEQUAL.value
+    elif operator == '>':
+        operator_number = Operations.GREATERTHAN.value
+    elif operator == '<':
+        operator_number = Operations.LESSTHAN.value
+    elif operator == '>=':
+        operator_number = Operations.GREATERTHANOREQ.value
+    elif operator == '<=':
+        operator_number = Operations.LESSTHANOREQ.value
+    elif operator == '&&':
+        operator_number = Operations.AND.value
+    elif operator == '||':
+        operator_number = Operations.OR.value
+    elif operator == '=':
+        operator_number = Operations.ASSIGN.value
+        
+    operators_stack.append(operator_number)
+    print(operator, " was pushed to operators stack with number: ", operator_number)
+
+def p_sem_push_operand(p):
+    '''sem_push_operand : empty
+    '''
+    operand = p[-1]
+    operands_stack.append(operand)
+    print(operand, " was pushed to operands stack")
+
+    # Check if variable/operand is declared and get its type
+    variable_type = functions_directory.find_variable(operand)
+    types_stack.append(variable_type)
+    print(variable_type, " was pushed to types stack")
+
+def p_sem_top_factor(p):
+    '''sem_top_factor : empty
+    '''
+    global temp_counter
+
+    # Multiplication or division of factors
+    if operators_stack[-1] == Operations.MULTIPLY.value or operators_stack[-1] == Operations.DIVIDE.value:
+        q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
+        print("quadruple q was created: ", q)
+        quadruples_list.append(q)
+        temp_counter+=1
+
+def p_sem_top_term(p):
+    '''sem_top_term : empty
+    '''
+    global temp_counter
+    
+    # Addition or substraction of terms
+    if operators_stack[-1] == Operations.PLUS.value or operators_stack[-1] == Operations.MINUS.value:
+        q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
+        print("quadruple q was created: ", q)
+        quadruples_list.append(q)
+        temp_counter+=1
+
+def p_sem_false_bottom_begin(p):
+    '''sem_false_bottom_begin : empty
+    '''
+    operators_stack.append(Operations.LEFT_PAR.value)
+
+def p_sem_false_bottom_end(p):
+    '''sem_false_bottom_end : empty
+    '''
+    operators_stack.pop()
+
+def p_sem_assign_value(p):
+    '''sem_assign_value : empty
+    '''
+    q = assignment_quad(operators_stack, operands_stack, types_stack)
+    quadruples_list.append(q)
+
+def p_sem_read_write(p):
+    '''sem_read_write : empty
+    '''
+    q = read_write_quad(operators_stack, operands_stack)
+    quadruples_list.append(q)
 
 parser_Mathrix = yacc.yacc()
 
@@ -302,6 +402,7 @@ if __name__ == '__main__':
             f.close()
 
             parser_Mathrix.parse(data)
+            print_quads(quadruples_list)
         except EOFError:
             print(EOFError)
     else:
