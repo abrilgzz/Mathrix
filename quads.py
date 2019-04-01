@@ -16,7 +16,7 @@ def create_quad(temp_counter, operators_stack, operands_stack, types_stack):
     left_operand = operands_stack.pop()
     left_operand_type = types_stack.pop()
     # Search cube for result type
-    result_type = SemanticCube[operator, left_operand, right_operand]
+    result_type = SemanticCube[operator, left_operand_type, right_operand_type]
 
     if(result_type == Errors.MISMATCH):
         print("Error, type mismatch.")
@@ -25,6 +25,7 @@ def create_quad(temp_counter, operators_stack, operands_stack, types_stack):
         temp = "t" + str(temp_counter)
         # Push operands and types obtained to stacks
         operands_stack.append(temp)
+
         types_stack.append(result_type)
         quad = define_quad(operator, left_operand, right_operand, temp)
         return quad
@@ -35,12 +36,9 @@ def assignment_quad(operators_stack, operands_stack, types_stack):
         operand = operands_stack.pop()
         operand_type = types_stack.pop()
         
-        
         result = operands_stack.pop()
         result_type = types_stack.pop()
-        print("result: ", result, "result type: ", result_type)
         
-
         if(result_type != operand_type):
                 print("Error, cannot assign.")
         else:

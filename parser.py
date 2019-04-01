@@ -329,19 +329,19 @@ def p_sem_push_operator(p):
         operator_number = Operations.ASSIGN.value
         
     operators_stack.append(operator_number)
-    print(operator, " was pushed to operators stack with number: ", operator_number)
+    # print(operator, " was pushed to operators stack with number: ", operator_number)
 
 def p_sem_push_operand(p):
     '''sem_push_operand : empty
     '''
     operand = p[-1]
     operands_stack.append(operand)
-    print(operand, " was pushed to operands stack")
+    # print(operand, " was pushed to operands stack")
 
     # Check if variable/operand is declared and get its type
     variable_type = functions_directory.find_variable(operand)
     types_stack.append(variable_type)
-    print(variable_type, " was pushed to types stack")
+    # print(variable_type, " was pushed to types stack")
 
 def p_sem_top_factor(p):
     '''sem_top_factor : empty
@@ -349,23 +349,23 @@ def p_sem_top_factor(p):
     global temp_counter
 
     # Multiplication or division of factors
-    if operators_stack[-1] == Operations.MULTIPLY.value or operators_stack[-1] == Operations.DIVIDE.value:
-        q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
-        print("quadruple q was created: ", q)
-        quadruples_list.append(q)
-        temp_counter+=1
+    if (operators_stack[-1:]):  # Check that top of stack exists
+        if (operators_stack[-1] == Operations.MULTIPLY.value or operators_stack[-1] == Operations.DIVIDE.value):
+            q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            temp_counter+=1
 
 def p_sem_top_term(p):
     '''sem_top_term : empty
     '''
     global temp_counter
-    
+
     # Addition or substraction of terms
-    if operators_stack[-1] == Operations.PLUS.value or operators_stack[-1] == Operations.MINUS.value:
-        q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
-        print("quadruple q was created: ", q)
-        quadruples_list.append(q)
-        temp_counter+=1
+    if (operators_stack[-1:]):  # Check that top of stack exists
+        if (operators_stack[-1] == Operations.PLUS.value or operators_stack[-1] == Operations.MINUS.value):
+            q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            temp_counter+=1
 
 def p_sem_false_bottom_begin(p):
     '''sem_false_bottom_begin : empty
