@@ -94,7 +94,7 @@ Rule 74    param_call_1 -> COMMA param_call
 Rule 75    param_call_1 -> empty
 Rule 76    while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block
 Rule 77    read -> READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
-Rule 78    write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON
+Rule 78    write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
 Rule 79    main -> MAIN block
 Rule 80    empty -> <empty>
 Rule 81    sem_get_type -> empty
@@ -206,7 +206,7 @@ sem_push_constant_double : 20
 sem_push_constant_int : 19
 sem_push_operand     : 22 43
 sem_push_operator    : 43 55 56 59 60 77 78
-sem_read_write       : 77
+sem_read_write       : 77 78
 sem_top_factor       : 58
 sem_top_term         : 54
 start                : 0
@@ -579,7 +579,7 @@ state 27
     (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
     (76) while_cycle -> . WHILE LEFT_PAR expression RIGHT_PAR block
     (77) read -> . READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
-    (78) write -> . WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON
+    (78) write -> . WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (35) block_3 -> . RIGHT_BRACE
     (16) var_type -> . INT sem_get_type
     (17) var_type -> . DOUBLE sem_get_type
@@ -810,7 +810,7 @@ state 38
     (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
     (76) while_cycle -> . WHILE LEFT_PAR expression RIGHT_PAR block
     (77) read -> . READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
-    (78) write -> . WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON
+    (78) write -> . WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (35) block_3 -> . RIGHT_BRACE
     (16) var_type -> . INT sem_get_type
     (17) var_type -> . DOUBLE sem_get_type
@@ -1098,7 +1098,7 @@ state 52
 
 state 53
 
-    (78) write -> WRITE . sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON
+    (78) write -> WRITE . sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (85) sem_push_operator -> . empty
     (80) empty -> .
 
@@ -1765,7 +1765,7 @@ state 84
 
 state 85
 
-    (78) write -> WRITE sem_push_operator . LEFT_PAR exp RIGHT_PAR SEMICOLON
+    (78) write -> WRITE sem_push_operator . LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
 
     LEFT_PAR        shift and go to state 122
 
@@ -2693,7 +2693,7 @@ state 121
 
 state 122
 
-    (78) write -> WRITE sem_push_operator LEFT_PAR . exp RIGHT_PAR SEMICOLON
+    (78) write -> WRITE sem_push_operator LEFT_PAR . exp RIGHT_PAR sem_read_write SEMICOLON
     (54) exp -> . term sem_top_term exp_1
     (58) term -> . factor sem_top_factor term_1
     (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
@@ -3231,7 +3231,7 @@ state 151
 
 state 152
 
-    (78) write -> WRITE sem_push_operator LEFT_PAR exp . RIGHT_PAR SEMICOLON
+    (78) write -> WRITE sem_push_operator LEFT_PAR exp . RIGHT_PAR sem_read_write SEMICOLON
 
     RIGHT_PAR       shift and go to state 166
 
@@ -3554,10 +3554,14 @@ state 165
 
 state 166
 
-    (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR . SEMICOLON
+    (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR . sem_read_write SEMICOLON
+    (94) sem_read_write -> . empty
+    (80) empty -> .
 
-    SEMICOLON       shift and go to state 182
+    SEMICOLON       reduce using rule 80 (empty -> .)
 
+    sem_read_write                 shift and go to state 182
+    empty                          shift and go to state 181
 
 state 167
 
@@ -3766,18 +3770,9 @@ state 181
 
 state 182
 
-    (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .
+    (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write . SEMICOLON
 
-    RETURN          reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    ID              reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    IF              reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    WHILE           reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    READ            reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    WRITE           reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    RIGHT_BRACE     reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    INT             reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    DOUBLE          reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
-    BOOL            reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON .)
+    SEMICOLON       shift and go to state 188
 
 
 state 183
@@ -3795,11 +3790,11 @@ state 184
     (15) param_declaration_1 -> . empty
     (80) empty -> .
 
-    COMMA           shift and go to state 189
+    COMMA           shift and go to state 190
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    param_declaration_1            shift and go to state 188
-    empty                          shift and go to state 190
+    param_declaration_1            shift and go to state 189
+    empty                          shift and go to state 191
 
 state 185
 
@@ -3851,12 +3846,28 @@ state 187
 
 state 188
 
+    (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .
+
+    RETURN          reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    ID              reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    IF              reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    WHILE           reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    READ            reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    WRITE           reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    RIGHT_BRACE     reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    INT             reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    DOUBLE          reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+    BOOL            reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
+
+
+state 189
+
     (12) param_declaration -> var_type array ID param_declaration_1 .
 
     RIGHT_PAR       reduce using rule 12 (param_declaration -> var_type array ID param_declaration_1 .)
 
 
-state 189
+state 190
 
     (14) param_declaration_1 -> COMMA . var_type array ID param_declaration_1
     (16) var_type -> . INT sem_get_type
@@ -3867,16 +3878,16 @@ state 189
     DOUBLE          shift and go to state 10
     BOOL            shift and go to state 11
 
-    var_type                       shift and go to state 191
+    var_type                       shift and go to state 192
 
-state 190
+state 191
 
     (15) param_declaration_1 -> empty .
 
     RIGHT_PAR       reduce using rule 15 (param_declaration_1 -> empty .)
 
 
-state 191
+state 192
 
     (14) param_declaration_1 -> COMMA var_type . array ID param_declaration_1
     (6) array -> . LEFT_BRACKET expression RIGHT_BRACKET array
@@ -3886,30 +3897,30 @@ state 191
     LEFT_BRACKET    shift and go to state 31
     ID              reduce using rule 80 (empty -> .)
 
-    array                          shift and go to state 192
+    array                          shift and go to state 193
     empty                          shift and go to state 32
 
-state 192
+state 193
 
     (14) param_declaration_1 -> COMMA var_type array . ID param_declaration_1
 
-    ID              shift and go to state 193
+    ID              shift and go to state 194
 
 
-state 193
+state 194
 
     (14) param_declaration_1 -> COMMA var_type array ID . param_declaration_1
     (14) param_declaration_1 -> . COMMA var_type array ID param_declaration_1
     (15) param_declaration_1 -> . empty
     (80) empty -> .
 
-    COMMA           shift and go to state 189
+    COMMA           shift and go to state 190
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    param_declaration_1            shift and go to state 194
-    empty                          shift and go to state 190
+    param_declaration_1            shift and go to state 195
+    empty                          shift and go to state 191
 
-state 194
+state 195
 
     (14) param_declaration_1 -> COMMA var_type array ID param_declaration_1 .
 

@@ -228,7 +228,7 @@ def p_read(p):
     '''
 
 def p_write(p):
-    '''write : WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR SEMICOLON
+    '''write : WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     '''
 
 def p_main(p):
@@ -326,6 +326,10 @@ def p_sem_push_operator(p):
         operator_number = Operations.OR.value
     elif operator == '=':
         operator_number = Operations.ASSIGN.value
+    elif operator == 'read':
+        operator_number = Operations.READ.value
+    elif operator == 'write':
+        operator_number = Operations.WRITE.value
         
     operators_stack.append(operator_number)
     # print(operator, " was pushed to operators stack with number: ", operator_number)

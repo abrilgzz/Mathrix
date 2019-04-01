@@ -2,12 +2,16 @@ int x;
 int y;
 
 function int test1(int a){
+    y = 3;
     double a;
     a = x + 3;
     
     double c;
 
     c = a + x;
+
+    write(a);
+    
     return c;
 }
 function int test2(int x){

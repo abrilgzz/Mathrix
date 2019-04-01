@@ -52,6 +52,7 @@ def assignment_quad(operators_stack, operands_stack, types_stack):
 def read_write_quad(operators_stack, operands_stack):
         result = operands_stack.pop()
         read_write = operators_stack.pop()
+        print("read_write: ", read_write)
         quad = define_quad(read_write, -1, -1, result)
         return quad
 
