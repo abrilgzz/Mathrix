@@ -8,13 +8,14 @@ function int test1(int a, double b){
     int c;
     int d; 
     
-    d = x;
 
     c = a + b;
     return c;
 }
 
-function int test1(int x, int y){
+function int test2(int x, int y){
+    int t;
+    t = 1;
     return t;
 }
 

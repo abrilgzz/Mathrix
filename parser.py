@@ -232,11 +232,11 @@ def p_write(p):
     '''
 
 def p_main(p):
-    '''main : MAIN block 
+    '''main : MAIN  block 
     '''
 
 def p_empty(p):
-	'''empty :
+	'''empty : 
     '''
 	pass
 
@@ -340,11 +340,13 @@ def p_sem_push_operand(p):
     '''sem_push_operand : empty
     '''
     operand = p[-1]
+    
+    # Check if variable/operand is declared and get its type
+    variable_type = functions_directory.find_variable(operand)
+
     operands_stack.append(operand)
     # print(operand, " was pushed to operands stack")
 
-    # Check if variable/operand is declared and get its type
-    variable_type = functions_directory.find_variable(operand)
     types_stack.append(variable_type)
     # print(variable_type, " was pushed to types stack")
 

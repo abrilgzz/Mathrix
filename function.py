@@ -1,3 +1,5 @@
+
+
 class Function:
     def __init__(self, function_id, function_type, variables_directory):
         self.function_id = function_id
@@ -6,3 +8,4 @@ class Function:
     
     def declareVar(self, variable):
         self.variables_directory[variable.var_id] = variable.var_type
+        

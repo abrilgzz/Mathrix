@@ -27,7 +27,7 @@ class Operations(IntEnum):
     READ = 15
     WRITE = 16
     RETURN = 17
-
     
 class Errors(IntEnum):
     MISMATCH = -1
+    

@@ -45,6 +45,7 @@ def assignment_quad(operators_stack, operands_stack, types_stack):
         
         if(assignment_result == -1):
                 print("Error, cannot assign.")
+                exit(1)
         else:
                 quad = define_quad(operator, operand, -1, result)
                 return quad
