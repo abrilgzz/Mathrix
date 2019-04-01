@@ -1,5 +1,5 @@
 int x;
-int y;
+double y;
 
 function int test1(int a){
     y = 3;
@@ -11,6 +11,9 @@ function int test1(int a){
     c = a + x;
 
     write(a);
+    write(2+2);
+
+    y = c * (a+2);
 
     return c;
 }

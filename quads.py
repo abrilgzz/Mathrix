@@ -52,14 +52,12 @@ def assignment_quad(operators_stack, operands_stack, types_stack):
 def one_operation_quad(operators_stack, operands_stack):
         result = operands_stack.pop()
         operation = operators_stack.pop()
-        print("operation: ", operation)
         quad = define_quad(operation, -1, -1, result)
         return quad
 
 def print_quads(quadruples_list):
-    counter = 0
+    counter = 1
     print("Quadruples: ")
     for q in quadruples_list:
-            print(q)
-            # print(str(counter) + ": ", str(q['operator']), str(q['left_operand']), str(q['right_operand']), str(q['result']))
+            print("q", counter, ": ", q)
             counter+=1
