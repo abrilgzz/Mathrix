@@ -94,10 +94,9 @@ def p_var_type(p):
     '''
 
 def p_var_cte(p):
-    '''var_cte : CTE_I
-    | CTE_D
+    '''var_cte : CTE_I sem_push_constant_int
+    | CTE_D sem_push_constant_double
     | cte_b
-    | CTE_S
     | ID sem_push_operand array 
     | function_call
     '''
@@ -342,6 +341,20 @@ def p_sem_push_operand(p):
     variable_type = functions_directory.find_variable(operand)
     types_stack.append(variable_type)
     # print(variable_type, " was pushed to types stack")
+
+def p_sem_push_constant_int(p):
+    '''sem_push_constant_int : empty
+    '''
+    constant = p[-1]
+    operands_stack.append(constant)
+    types_stack.append(Types.INT.value)
+
+def p_sem_push_constant_double(p):
+    '''sem_push_constant_double : empty
+    '''
+    constant = p[-1]
+    operands_stack.append(constant)
+    types_stack.append(Types.DOUBLE.value)
 
 def p_sem_top_factor(p):
     '''sem_top_factor : empty
