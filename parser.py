@@ -36,6 +36,7 @@ current_type = Types.VOID
 operators_stack = []
 operands_stack = []
 types_stack = []
+jumps_stack = []
 
 quadruples_list = []
 temp_counter = 0
@@ -153,14 +154,14 @@ def p_expression(p):
     '''
 
 def p_expression_1(p):
-    '''expression_1 : IS_EQUAL_TO exp
-    | NOT_EQUAL_TO exp
-    | GREATER_THAN exp
-    | LESS_THAN exp
-    | GREATER_THAN_OR_EQUAL_TO exp
-    | LESS_THAN_OR_EQUAL_TO exp
-    | AND exp
-    | OR exp
+    '''expression_1 : IS_EQUAL_TO sem_push_operator exp
+    | NOT_EQUAL_TO sem_push_operator exp
+    | GREATER_THAN sem_push_operator exp
+    | LESS_THAN sem_push_operator exp
+    | GREATER_THAN_OR_EQUAL_TO sem_push_operator exp
+    | LESS_THAN_OR_EQUAL_TO sem_push_operator exp
+    | AND sem_push_operator exp
+    | OR sem_push_operator exp 
     | empty 
     '''
 
@@ -197,11 +198,11 @@ def p_factor_1(p):
     '''
 
 def p_condition(p):
-    '''condition : IF LEFT_PAR expression RIGHT_PAR block condition_1
+    '''condition : IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
     '''
 
 def p_condition_1(p):
-    '''condition_1 : ELSE block
+    '''condition_1 : ELSE sem_else_condition block
     | empty
     '''
 
@@ -220,7 +221,7 @@ def p_param_call_1(p):
     '''
 
 def p_while_cycle(p):
-    '''while_cycle : WHILE LEFT_PAR expression RIGHT_PAR block
+    '''while_cycle : WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
     '''
 
 def p_read(p):
@@ -332,6 +333,12 @@ def p_sem_push_operator(p):
         operator_number = Operations.WRITE.value
     elif operator == 'return':
         operator_number = Operations.RETURN.value
+    elif operator == 'gotof':
+        operator_number = Operations.GOTOF.value
+    elif operator == 'gotot':
+        operator_number = Operations.GOTOT.value
+    elif operator == 'goto':
+        operator_number = Operations.GOTO.value
         
     operators_stack.append(operator_number)
     # print(operator, " was pushed to operators stack with number: ", operator_number)
@@ -415,6 +422,70 @@ def p_sem_return_function(p):
     '''
     q = one_operation_quad(operators_stack, operands_stack)
     quadruples_list.append(q)  
+
+# Conditions and cycles
+def p_sem_evaluate_expression(p):
+    '''sem_evaluate_expression : empty
+    '''
+    global temp_counter
+    if(operators_stack[-1:]):
+        operator = operators_stack[-1]
+        if (operator == Operations.GREATERTHAN.value or operator == Operations.LESSTHAN.value
+        or operator == Operations.GREATERTHANOREQ.value or operator == Operations.LESSTHANOREQ.values):
+            # Get right operator and its type
+            right_operand = operands_stack.pop()
+            right_operand_type = types_stack.pop()
+            # Get left operator and its type
+            left_operand = operands_stack.pop()
+            left_operand_type = types_stack.pop()
+            # Search cube for result type
+            expression_type = int(SemanticCube[operator, left_operand_type, right_operand_type])
+            print("expression type:", expression_type)
+
+            if(expression_type == -1):
+                print("Error, type mismatch, expression is not boolean")
+                exit(1)
+            else:
+                result = operands_stack.pop()
+                q = define_quad(Operations.GOTOF.value, result, -1, "")
+                quadruples_list.append(q)
+                temp_counter+=1
+                jumps_stack.append(temp_counter-1)
+
+def p_sem_end_condition(p):
+    '''sem_end_condition : empty
+    '''
+    end = jumps_stack.pop()
+    fill(quadruples_list, end, temp_counter)
+
+
+def p_sem_else_condition(p):
+    '''sem_else_condition : empty
+    '''
+    global temp_counter
+    q = define_quad(Operations.GOTO.value, -1, -1, "")
+    quadruples_list.append(q)
+    temp_counter+=1
+    false = jumps_stack.pop()
+    jumps_stack.append(temp_counter-1)
+    fill(quadruples_list, false, temp_counter)
+
+def p_sem_start_while(p):
+    '''sem_start_while : empty
+    '''
+    global temp_counter
+    jumps_stack.append(temp_counter)
+
+def p_sem_end_while(p):
+    '''sem_end_while : empty
+    '''
+    global temp_counter
+    end = jumps_stack.pop()
+    ret = jumps_stack.pop()
+    q = define_quad(Operations.GOTO.value, -1, -1, ret) 
+    quadruples_list.append(q)
+    temp_counter+=1
+    fill(quadruples_list, end, temp_counter)
 
 parser_Mathrix = yacc.yacc()
 

@@ -27,7 +27,10 @@ class Operations(IntEnum):
     READ = 15
     WRITE = 16
     RETURN = 17
+    # Cycles and conditions operations
+    GOTOF = 19
+    GOTOT = 20
+    GOTO = 21
     
 class Errors(IntEnum):
     MISMATCH = -1
-    

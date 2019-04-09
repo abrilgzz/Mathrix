@@ -56,6 +56,11 @@ def one_operation_quad(operators_stack, operands_stack):
         quad = define_quad(operation, -1, -1, result)
         return quad
 
+# Check fill function
+def fill(quadruples_list, result, temp_counter):
+        q = quadruples_list[temp_counter]
+        quadruples_list[temp_counter]['result'] = result
+
 def print_quads(quadruples_list):
     counter = 1
     print("Quadruples: ")

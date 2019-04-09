@@ -42,6 +42,9 @@ reservedWords = {
     'false': 'FALSE',
     'read': 'READ',
     'write': 'WRITE',
+    'gotof': 'GOTOF',
+    'gotot': 'GOTOT',
+    'goto': 'GOTO',
     # Special functions
     'find_determinant': 'FIND_DETERMINANT',
     'transpose_matrix': 'TRANSPOSE_MATRIX',

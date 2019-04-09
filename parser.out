@@ -6,6 +6,9 @@ Unused terminals:
     ADD_ROWS
     CTE_S
     FIND_DETERMINANT
+    GOTO
+    GOTOF
+    GOTOT
     MULTIPLY_COLS
     MULTIPLY_MATRIX
     MULTIPLY_ROWS
@@ -61,14 +64,14 @@ Rule 41    statement -> read
 Rule 42    statement -> write
 Rule 43    assignment -> ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON
 Rule 44    expression -> exp expression_1
-Rule 45    expression_1 -> IS_EQUAL_TO exp
-Rule 46    expression_1 -> NOT_EQUAL_TO exp
-Rule 47    expression_1 -> GREATER_THAN exp
-Rule 48    expression_1 -> LESS_THAN exp
-Rule 49    expression_1 -> GREATER_THAN_OR_EQUAL_TO exp
-Rule 50    expression_1 -> LESS_THAN_OR_EQUAL_TO exp
-Rule 51    expression_1 -> AND exp
-Rule 52    expression_1 -> OR exp
+Rule 45    expression_1 -> IS_EQUAL_TO sem_push_operator exp
+Rule 46    expression_1 -> NOT_EQUAL_TO sem_push_operator exp
+Rule 47    expression_1 -> GREATER_THAN sem_push_operator exp
+Rule 48    expression_1 -> LESS_THAN sem_push_operator exp
+Rule 49    expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator exp
+Rule 50    expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator exp
+Rule 51    expression_1 -> AND sem_push_operator exp
+Rule 52    expression_1 -> OR sem_push_operator exp
 Rule 53    expression_1 -> empty
 Rule 54    exp -> term sem_top_term exp_1
 Rule 55    exp_1 -> PLUS sem_push_operator exp
@@ -84,15 +87,15 @@ Rule 64    factor -> factor_1 var_cte
 Rule 65    factor_1 -> PLUS
 Rule 66    factor_1 -> MINUS
 Rule 67    factor_1 -> empty
-Rule 68    condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1
-Rule 69    condition_1 -> ELSE block
+Rule 68    condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
+Rule 69    condition_1 -> ELSE sem_else_condition block
 Rule 70    condition_1 -> empty
 Rule 71    function_call -> ID LEFT_PAR param_call RIGHT_PAR
 Rule 72    param_call -> expression param_call_1
 Rule 73    param_call -> empty
 Rule 74    param_call_1 -> COMMA param_call
 Rule 75    param_call_1 -> empty
-Rule 76    while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block
+Rule 76    while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
 Rule 77    read -> READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
 Rule 78    write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
 Rule 79    main -> MAIN block
@@ -112,6 +115,11 @@ Rule 92    sem_false_bottom_end -> empty
 Rule 93    sem_assign_value -> empty
 Rule 94    sem_read_write -> empty
 Rule 95    sem_return_function -> empty
+Rule 96    sem_evaluate_expression -> empty
+Rule 97    sem_end_condition -> empty
+Rule 98    sem_else_condition -> empty
+Rule 99    sem_start_while -> empty
+Rule 100   sem_end_while -> empty
 
 Terminals, with rules where they appear
 
@@ -130,6 +138,9 @@ ELSE                 : 69
 FALSE                : 25
 FIND_DETERMINANT     : 
 FUNCTION             : 10
+GOTO                 : 
+GOTOF                : 
+GOTOT                : 
 GREATER_THAN         : 47
 GREATER_THAN_OR_EQUAL_TO : 49
 ID                   : 4 11 12 14 22 43 71
@@ -177,7 +188,7 @@ block_3              : 33 34
 condition            : 38
 condition_1          : 68
 cte_b                : 21
-empty                : 5 7 13 15 53 57 61 67 70 73 75 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95
+empty                : 5 7 13 15 53 57 61 67 70 73 75 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100
 exp                  : 44 45 46 47 48 49 50 51 52 55 56 77 78
 exp_1                : 54
 expression           : 6 33 43 62 68 72 76
@@ -199,16 +210,21 @@ read                 : 41
 sem_add_func         : 11
 sem_add_var          : 4
 sem_assign_value     : 43
+sem_else_condition   : 69
+sem_end_condition    : 68
 sem_end_func         : 10
+sem_end_while        : 76
+sem_evaluate_expression : 68 76
 sem_false_bottom_begin : 62
 sem_false_bottom_end : 62
 sem_get_type         : 16 17 18 26 27 28 29
 sem_push_constant_double : 20
 sem_push_constant_int : 19
 sem_push_operand     : 22 43
-sem_push_operator    : 33 43 55 56 59 60 77 78
+sem_push_operator    : 33 43 45 46 47 48 49 50 51 52 55 56 59 60 77 78
 sem_read_write       : 77 78
 sem_return_function  : 33
+sem_start_while      : 76
 sem_top_factor       : 58
 sem_top_term         : 54
 start                : 0
@@ -577,9 +593,9 @@ state 27
     (4) var_declaration -> . var_type ID sem_add_var array SEMICOLON
     (5) var_declaration -> . empty
     (43) assignment -> . ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON
-    (68) condition -> . IF LEFT_PAR expression RIGHT_PAR block condition_1
+    (68) condition -> . IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
     (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
-    (76) while_cycle -> . WHILE LEFT_PAR expression RIGHT_PAR block
+    (76) while_cycle -> . WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
     (77) read -> . READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (78) write -> . WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (35) block_3 -> . RIGHT_BRACE
@@ -808,9 +824,9 @@ state 38
     (4) var_declaration -> . var_type ID sem_add_var array SEMICOLON
     (5) var_declaration -> . empty
     (43) assignment -> . ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON
-    (68) condition -> . IF LEFT_PAR expression RIGHT_PAR block condition_1
+    (68) condition -> . IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
     (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
-    (76) while_cycle -> . WHILE LEFT_PAR expression RIGHT_PAR block
+    (76) while_cycle -> . WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
     (77) read -> . READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (78) write -> . WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
     (35) block_3 -> . RIGHT_BRACE
@@ -1041,17 +1057,21 @@ state 49
 
 state 50
 
-    (68) condition -> IF . LEFT_PAR expression RIGHT_PAR block condition_1
+    (68) condition -> IF . LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
 
     LEFT_PAR        shift and go to state 82
 
 
 state 51
 
-    (76) while_cycle -> WHILE . LEFT_PAR expression RIGHT_PAR block
+    (76) while_cycle -> WHILE . sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
+    (99) sem_start_while -> . empty
+    (80) empty -> .
 
-    LEFT_PAR        shift and go to state 83
+    LEFT_PAR        reduce using rule 80 (empty -> .)
 
+    sem_start_while                shift and go to state 83
+    empty                          shift and go to state 84
 
 state 52
 
@@ -1061,7 +1081,7 @@ state 52
 
     LEFT_PAR        reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 84
+    sem_push_operator              shift and go to state 85
     empty                          shift and go to state 78
 
 state 53
@@ -1072,7 +1092,7 @@ state 53
 
     LEFT_PAR        reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 85
+    sem_push_operator              shift and go to state 86
     empty                          shift and go to state 78
 
 state 54
@@ -1099,7 +1119,7 @@ state 55
 
     (4) var_declaration -> var_type ID sem_add_var array . SEMICOLON
 
-    SEMICOLON       shift and go to state 86
+    SEMICOLON       shift and go to state 87
 
 
 state 56
@@ -1111,8 +1131,8 @@ state 56
     FUNCTION        reduce using rule 80 (empty -> .)
     MAIN            reduce using rule 80 (empty -> .)
 
-    sem_end_func                   shift and go to state 87
-    empty                          shift and go to state 88
+    sem_end_func                   shift and go to state 88
+    empty                          shift and go to state 89
 
 state 57
 
@@ -1122,45 +1142,45 @@ state 57
 
     LEFT_PAR        reduce using rule 80 (empty -> .)
 
-    sem_add_func                   shift and go to state 89
-    empty                          shift and go to state 90
+    sem_add_func                   shift and go to state 90
+    empty                          shift and go to state 91
 
 state 58
 
     (6) array -> LEFT_BRACKET expression . RIGHT_BRACKET array
 
-    RIGHT_BRACKET   shift and go to state 91
+    RIGHT_BRACKET   shift and go to state 92
 
 
 state 59
 
     (44) expression -> exp . expression_1
-    (45) expression_1 -> . IS_EQUAL_TO exp
-    (46) expression_1 -> . NOT_EQUAL_TO exp
-    (47) expression_1 -> . GREATER_THAN exp
-    (48) expression_1 -> . LESS_THAN exp
-    (49) expression_1 -> . GREATER_THAN_OR_EQUAL_TO exp
-    (50) expression_1 -> . LESS_THAN_OR_EQUAL_TO exp
-    (51) expression_1 -> . AND exp
-    (52) expression_1 -> . OR exp
+    (45) expression_1 -> . IS_EQUAL_TO sem_push_operator exp
+    (46) expression_1 -> . NOT_EQUAL_TO sem_push_operator exp
+    (47) expression_1 -> . GREATER_THAN sem_push_operator exp
+    (48) expression_1 -> . LESS_THAN sem_push_operator exp
+    (49) expression_1 -> . GREATER_THAN_OR_EQUAL_TO sem_push_operator exp
+    (50) expression_1 -> . LESS_THAN_OR_EQUAL_TO sem_push_operator exp
+    (51) expression_1 -> . AND sem_push_operator exp
+    (52) expression_1 -> . OR sem_push_operator exp
     (53) expression_1 -> . empty
     (80) empty -> .
 
-    IS_EQUAL_TO     shift and go to state 93
-    NOT_EQUAL_TO    shift and go to state 94
-    GREATER_THAN    shift and go to state 95
-    LESS_THAN       shift and go to state 96
-    GREATER_THAN_OR_EQUAL_TO shift and go to state 97
-    LESS_THAN_OR_EQUAL_TO shift and go to state 98
-    AND             shift and go to state 99
-    OR              shift and go to state 100
+    IS_EQUAL_TO     shift and go to state 94
+    NOT_EQUAL_TO    shift and go to state 95
+    GREATER_THAN    shift and go to state 96
+    LESS_THAN       shift and go to state 97
+    GREATER_THAN_OR_EQUAL_TO shift and go to state 98
+    LESS_THAN_OR_EQUAL_TO shift and go to state 99
+    AND             shift and go to state 100
+    OR              shift and go to state 101
     RIGHT_BRACKET   reduce using rule 80 (empty -> .)
     SEMICOLON       reduce using rule 80 (empty -> .)
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    expression_1                   shift and go to state 92
-    empty                          shift and go to state 101
+    expression_1                   shift and go to state 93
+    empty                          shift and go to state 102
 
 state 60
 
@@ -1183,8 +1203,8 @@ state 60
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    sem_top_term                   shift and go to state 102
-    empty                          shift and go to state 103
+    sem_top_term                   shift and go to state 103
+    empty                          shift and go to state 104
 
 state 61
 
@@ -1209,8 +1229,8 @@ state 61
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    sem_top_factor                 shift and go to state 104
-    empty                          shift and go to state 105
+    sem_top_factor                 shift and go to state 105
+    empty                          shift and go to state 106
 
 state 62
 
@@ -1227,8 +1247,8 @@ state 62
     TRUE            reduce using rule 80 (empty -> .)
     FALSE           reduce using rule 80 (empty -> .)
 
-    sem_false_bottom_begin         shift and go to state 106
-    empty                          shift and go to state 107
+    sem_false_bottom_begin         shift and go to state 107
+    empty                          shift and go to state 108
 
 state 63
 
@@ -1270,7 +1290,7 @@ state 64
     TRUE            shift and go to state 73
     FALSE           shift and go to state 74
 
-    var_cte                        shift and go to state 108
+    var_cte                        shift and go to state 109
     cte_b                          shift and go to state 67
     function_call                  shift and go to state 69
 
@@ -1297,8 +1317,8 @@ state 65
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    sem_push_constant_int          shift and go to state 109
-    empty                          shift and go to state 110
+    sem_push_constant_int          shift and go to state 110
+    empty                          shift and go to state 111
 
 state 66
 
@@ -1323,8 +1343,8 @@ state 66
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    sem_push_constant_double       shift and go to state 111
-    empty                          shift and go to state 112
+    sem_push_constant_double       shift and go to state 112
+    empty                          shift and go to state 113
 
 state 67
 
@@ -1374,7 +1394,7 @@ state 68
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    sem_push_operand               shift and go to state 113
+    sem_push_operand               shift and go to state 114
     empty                          shift and go to state 81
 
 state 69
@@ -1554,7 +1574,7 @@ state 77
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    expression                     shift and go to state 114
+    expression                     shift and go to state 115
     exp                            shift and go to state 59
     term                           shift and go to state 60
     factor                         shift and go to state 61
@@ -1582,7 +1602,7 @@ state 79
 
     (43) assignment -> ID sem_push_operand . ASSIGN sem_push_operator expression sem_assign_value SEMICOLON
 
-    ASSIGN          shift and go to state 115
+    ASSIGN          shift and go to state 116
 
 
 state 80
@@ -1630,9 +1650,9 @@ state 80
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    param_call                     shift and go to state 116
-    expression                     shift and go to state 117
-    empty                          shift and go to state 118
+    param_call                     shift and go to state 117
+    expression                     shift and go to state 118
+    empty                          shift and go to state 119
     exp                            shift and go to state 59
     term                           shift and go to state 60
     factor                         shift and go to state 61
@@ -1667,59 +1687,7 @@ state 81
 
 state 82
 
-    (68) condition -> IF LEFT_PAR . expression RIGHT_PAR block condition_1
-    (44) expression -> . exp expression_1
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
-    (80) empty -> .
-
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
-
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    expression                     shift and go to state 119
-    exp                            shift and go to state 59
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
-
-state 83
-
-    (76) while_cycle -> WHILE LEFT_PAR . expression RIGHT_PAR block
+    (68) condition -> IF LEFT_PAR . expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
     (44) expression -> . exp expression_1
     (54) exp -> . term sem_top_term exp_1
     (58) term -> . factor sem_top_factor term_1
@@ -1769,21 +1737,35 @@ state 83
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 84
+state 83
 
-    (77) read -> READ sem_push_operator . LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
+    (76) while_cycle -> WHILE sem_start_while . LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
 
     LEFT_PAR        shift and go to state 121
 
 
+state 84
+
+    (99) sem_start_while -> empty .
+
+    LEFT_PAR        reduce using rule 99 (sem_start_while -> empty .)
+
+
 state 85
 
-    (78) write -> WRITE sem_push_operator . LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
+    (77) read -> READ sem_push_operator . LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
 
     LEFT_PAR        shift and go to state 122
 
 
 state 86
+
+    (78) write -> WRITE sem_push_operator . LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON
+
+    LEFT_PAR        shift and go to state 123
+
+
+state 87
 
     (4) var_declaration -> var_type ID sem_add_var array SEMICOLON .
 
@@ -1801,7 +1783,7 @@ state 86
     RIGHT_BRACE     reduce using rule 4 (var_declaration -> var_type ID sem_add_var array SEMICOLON .)
 
 
-state 87
+state 88
 
     (10) func_signature -> FUNCTION func_type array func_signature_1 sem_end_func .
 
@@ -1809,7 +1791,7 @@ state 87
     MAIN            reduce using rule 10 (func_signature -> FUNCTION func_type array func_signature_1 sem_end_func .)
 
 
-state 88
+state 89
 
     (83) sem_end_func -> empty .
 
@@ -1817,21 +1799,21 @@ state 88
     MAIN            reduce using rule 83 (sem_end_func -> empty .)
 
 
-state 89
+state 90
 
     (11) func_signature_1 -> ID sem_add_func . LEFT_PAR param_declaration RIGHT_PAR block
 
-    LEFT_PAR        shift and go to state 123
+    LEFT_PAR        shift and go to state 124
 
 
-state 90
+state 91
 
     (82) sem_add_func -> empty .
 
     LEFT_PAR        reduce using rule 82 (sem_add_func -> empty .)
 
 
-state 91
+state 92
 
     (6) array -> LEFT_BRACKET expression RIGHT_BRACKET . array
     (6) array -> . LEFT_BRACKET expression RIGHT_BRACKET array
@@ -1857,10 +1839,10 @@ state 91
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    array                          shift and go to state 124
+    array                          shift and go to state 125
     empty                          shift and go to state 32
 
-state 92
+state 93
 
     (44) expression -> exp expression_1 .
 
@@ -1870,407 +1852,151 @@ state 92
     RIGHT_PAR       reduce using rule 44 (expression -> exp expression_1 .)
 
 
-state 93
-
-    (45) expression_1 -> IS_EQUAL_TO . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
-    (80) empty -> .
-
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
-
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 125
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
-
 state 94
 
-    (46) expression_1 -> NOT_EQUAL_TO . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (45) expression_1 -> IS_EQUAL_TO . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 126
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 126
+    empty                          shift and go to state 78
 
 state 95
 
-    (47) expression_1 -> GREATER_THAN . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (46) expression_1 -> NOT_EQUAL_TO . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 127
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 127
+    empty                          shift and go to state 78
 
 state 96
 
-    (48) expression_1 -> LESS_THAN . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (47) expression_1 -> GREATER_THAN . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 128
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 128
+    empty                          shift and go to state 78
 
 state 97
 
-    (49) expression_1 -> GREATER_THAN_OR_EQUAL_TO . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (48) expression_1 -> LESS_THAN . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 129
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 129
+    empty                          shift and go to state 78
 
 state 98
 
-    (50) expression_1 -> LESS_THAN_OR_EQUAL_TO . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (49) expression_1 -> GREATER_THAN_OR_EQUAL_TO . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 130
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 130
+    empty                          shift and go to state 78
 
 state 99
 
-    (51) expression_1 -> AND . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (50) expression_1 -> LESS_THAN_OR_EQUAL_TO . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 131
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 131
+    empty                          shift and go to state 78
 
 state 100
 
-    (52) expression_1 -> OR . exp
-    (54) exp -> . term sem_top_term exp_1
-    (58) term -> . factor sem_top_factor term_1
-    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
-    (63) factor -> . var_cte
-    (64) factor -> . factor_1 var_cte
-    (19) var_cte -> . CTE_I sem_push_constant_int
-    (20) var_cte -> . CTE_D sem_push_constant_double
-    (21) var_cte -> . cte_b
-    (22) var_cte -> . ID sem_push_operand array
-    (23) var_cte -> . function_call
-    (65) factor_1 -> . PLUS
-    (66) factor_1 -> . MINUS
-    (67) factor_1 -> . empty
-    (24) cte_b -> . TRUE
-    (25) cte_b -> . FALSE
-    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (51) expression_1 -> AND . sem_push_operator exp
+    (85) sem_push_operator -> . empty
     (80) empty -> .
 
-  ! shift/reduce conflict for CTE_I resolved as shift
-  ! shift/reduce conflict for CTE_D resolved as shift
-  ! shift/reduce conflict for ID resolved as shift
-  ! shift/reduce conflict for TRUE resolved as shift
-  ! shift/reduce conflict for FALSE resolved as shift
-    LEFT_PAR        shift and go to state 62
-    CTE_I           shift and go to state 65
-    CTE_D           shift and go to state 66
-    ID              shift and go to state 68
-    PLUS            shift and go to state 70
-    MINUS           shift and go to state 71
-    TRUE            shift and go to state 73
-    FALSE           shift and go to state 74
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
 
-  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
-  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
-  ! ID              [ reduce using rule 80 (empty -> .) ]
-  ! TRUE            [ reduce using rule 80 (empty -> .) ]
-  ! FALSE           [ reduce using rule 80 (empty -> .) ]
-
-    exp                            shift and go to state 132
-    term                           shift and go to state 60
-    factor                         shift and go to state 61
-    var_cte                        shift and go to state 63
-    factor_1                       shift and go to state 64
-    cte_b                          shift and go to state 67
-    function_call                  shift and go to state 69
-    empty                          shift and go to state 72
+    sem_push_operator              shift and go to state 132
+    empty                          shift and go to state 78
 
 state 101
+
+    (52) expression_1 -> OR . sem_push_operator exp
+    (85) sem_push_operator -> . empty
+    (80) empty -> .
+
+    LEFT_PAR        reduce using rule 80 (empty -> .)
+    CTE_I           reduce using rule 80 (empty -> .)
+    CTE_D           reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    PLUS            reduce using rule 80 (empty -> .)
+    MINUS           reduce using rule 80 (empty -> .)
+    TRUE            reduce using rule 80 (empty -> .)
+    FALSE           reduce using rule 80 (empty -> .)
+
+    sem_push_operator              shift and go to state 133
+    empty                          shift and go to state 78
+
+state 102
 
     (53) expression_1 -> empty .
 
@@ -2280,7 +2006,7 @@ state 101
     RIGHT_PAR       reduce using rule 53 (expression_1 -> empty .)
 
 
-state 102
+state 103
 
     (54) exp -> term sem_top_term . exp_1
     (55) exp_1 -> . PLUS sem_push_operator exp
@@ -2288,8 +2014,8 @@ state 102
     (57) exp_1 -> . empty
     (80) empty -> .
 
-    PLUS            shift and go to state 134
-    MINUS           shift and go to state 135
+    PLUS            shift and go to state 135
+    MINUS           shift and go to state 136
     IS_EQUAL_TO     reduce using rule 80 (empty -> .)
     NOT_EQUAL_TO    reduce using rule 80 (empty -> .)
     GREATER_THAN    reduce using rule 80 (empty -> .)
@@ -2303,10 +2029,10 @@ state 102
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    exp_1                          shift and go to state 133
-    empty                          shift and go to state 136
+    exp_1                          shift and go to state 134
+    empty                          shift and go to state 137
 
-state 103
+state 104
 
     (90) sem_top_term -> empty .
 
@@ -2326,7 +2052,7 @@ state 103
     RIGHT_PAR       reduce using rule 90 (sem_top_term -> empty .)
 
 
-state 104
+state 105
 
     (58) term -> factor sem_top_factor . term_1
     (59) term_1 -> . MULTIPLY sem_push_operator term
@@ -2334,8 +2060,8 @@ state 104
     (61) term_1 -> . empty
     (80) empty -> .
 
-    MULTIPLY        shift and go to state 138
-    DIVIDE          shift and go to state 139
+    MULTIPLY        shift and go to state 139
+    DIVIDE          shift and go to state 140
     PLUS            reduce using rule 80 (empty -> .)
     MINUS           reduce using rule 80 (empty -> .)
     IS_EQUAL_TO     reduce using rule 80 (empty -> .)
@@ -2351,10 +2077,10 @@ state 104
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    term_1                         shift and go to state 137
-    empty                          shift and go to state 140
+    term_1                         shift and go to state 138
+    empty                          shift and go to state 141
 
-state 105
+state 106
 
     (89) sem_top_factor -> empty .
 
@@ -2376,7 +2102,7 @@ state 105
     RIGHT_PAR       reduce using rule 89 (sem_top_factor -> empty .)
 
 
-state 106
+state 107
 
     (62) factor -> LEFT_PAR sem_false_bottom_begin . expression RIGHT_PAR sem_false_bottom_end
     (44) expression -> . exp expression_1
@@ -2418,7 +2144,7 @@ state 106
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    expression                     shift and go to state 141
+    expression                     shift and go to state 142
     exp                            shift and go to state 59
     term                           shift and go to state 60
     factor                         shift and go to state 61
@@ -2428,7 +2154,7 @@ state 106
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 107
+state 108
 
     (91) sem_false_bottom_begin -> empty .
 
@@ -2442,7 +2168,7 @@ state 107
     FALSE           reduce using rule 91 (sem_false_bottom_begin -> empty .)
 
 
-state 108
+state 109
 
     (64) factor -> factor_1 var_cte .
 
@@ -2464,7 +2190,7 @@ state 108
     RIGHT_PAR       reduce using rule 64 (factor -> factor_1 var_cte .)
 
 
-state 109
+state 110
 
     (19) var_cte -> CTE_I sem_push_constant_int .
 
@@ -2486,7 +2212,7 @@ state 109
     RIGHT_PAR       reduce using rule 19 (var_cte -> CTE_I sem_push_constant_int .)
 
 
-state 110
+state 111
 
     (87) sem_push_constant_int -> empty .
 
@@ -2508,7 +2234,7 @@ state 110
     RIGHT_PAR       reduce using rule 87 (sem_push_constant_int -> empty .)
 
 
-state 111
+state 112
 
     (20) var_cte -> CTE_D sem_push_constant_double .
 
@@ -2530,7 +2256,7 @@ state 111
     RIGHT_PAR       reduce using rule 20 (var_cte -> CTE_D sem_push_constant_double .)
 
 
-state 112
+state 113
 
     (88) sem_push_constant_double -> empty .
 
@@ -2552,7 +2278,7 @@ state 112
     RIGHT_PAR       reduce using rule 88 (sem_push_constant_double -> empty .)
 
 
-state 113
+state 114
 
     (22) var_cte -> ID sem_push_operand . array
     (6) array -> . LEFT_BRACKET expression RIGHT_BRACKET array
@@ -2577,10 +2303,10 @@ state 113
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    array                          shift and go to state 142
+    array                          shift and go to state 143
     empty                          shift and go to state 32
 
-state 114
+state 115
 
     (33) block_2 -> RETURN sem_push_operator expression . sem_return_function SEMICOLON block_3
     (95) sem_return_function -> . empty
@@ -2588,10 +2314,10 @@ state 114
 
     SEMICOLON       reduce using rule 80 (empty -> .)
 
-    sem_return_function            shift and go to state 143
-    empty                          shift and go to state 144
+    sem_return_function            shift and go to state 144
+    empty                          shift and go to state 145
 
-state 115
+state 116
 
     (43) assignment -> ID sem_push_operand ASSIGN . sem_push_operator expression sem_assign_value SEMICOLON
     (85) sem_push_operator -> . empty
@@ -2606,30 +2332,30 @@ state 115
     TRUE            reduce using rule 80 (empty -> .)
     FALSE           reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 145
+    sem_push_operator              shift and go to state 146
     empty                          shift and go to state 78
 
-state 116
+state 117
 
     (71) function_call -> ID LEFT_PAR param_call . RIGHT_PAR
 
-    RIGHT_PAR       shift and go to state 146
+    RIGHT_PAR       shift and go to state 147
 
 
-state 117
+state 118
 
     (72) param_call -> expression . param_call_1
     (74) param_call_1 -> . COMMA param_call
     (75) param_call_1 -> . empty
     (80) empty -> .
 
-    COMMA           shift and go to state 148
+    COMMA           shift and go to state 149
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    param_call_1                   shift and go to state 147
-    empty                          shift and go to state 149
+    param_call_1                   shift and go to state 148
+    empty                          shift and go to state 150
 
-state 118
+state 119
 
     (73) param_call -> empty .
     (67) factor_1 -> empty .
@@ -2642,23 +2368,17 @@ state 118
     FALSE           reduce using rule 67 (factor_1 -> empty .)
 
 
-state 119
-
-    (68) condition -> IF LEFT_PAR expression . RIGHT_PAR block condition_1
-
-    RIGHT_PAR       shift and go to state 150
-
-
 state 120
 
-    (76) while_cycle -> WHILE LEFT_PAR expression . RIGHT_PAR block
+    (68) condition -> IF LEFT_PAR expression . RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
 
     RIGHT_PAR       shift and go to state 151
 
 
 state 121
 
-    (77) read -> READ sem_push_operator LEFT_PAR . exp RIGHT_PAR sem_read_write SEMICOLON
+    (76) while_cycle -> WHILE sem_start_while LEFT_PAR . expression RIGHT_PAR sem_evaluate_expression block sem_end_while
+    (44) expression -> . exp expression_1
     (54) exp -> . term sem_top_term exp_1
     (58) term -> . factor sem_top_factor term_1
     (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
@@ -2697,7 +2417,8 @@ state 121
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    exp                            shift and go to state 152
+    expression                     shift and go to state 152
+    exp                            shift and go to state 59
     term                           shift and go to state 60
     factor                         shift and go to state 61
     var_cte                        shift and go to state 63
@@ -2708,7 +2429,7 @@ state 121
 
 state 122
 
-    (78) write -> WRITE sem_push_operator LEFT_PAR . exp RIGHT_PAR sem_read_write SEMICOLON
+    (77) read -> READ sem_push_operator LEFT_PAR . exp RIGHT_PAR sem_read_write SEMICOLON
     (54) exp -> . term sem_top_term exp_1
     (58) term -> . factor sem_top_factor term_1
     (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
@@ -2758,6 +2479,56 @@ state 122
 
 state 123
 
+    (78) write -> WRITE sem_push_operator LEFT_PAR . exp RIGHT_PAR sem_read_write SEMICOLON
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
+
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
+
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 154
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
+
+state 124
+
     (11) func_signature_1 -> ID sem_add_func LEFT_PAR . param_declaration RIGHT_PAR block
     (12) param_declaration -> . var_type array ID param_declaration_1
     (13) param_declaration -> . empty
@@ -2771,11 +2542,11 @@ state 123
     BOOL            shift and go to state 11
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    param_declaration              shift and go to state 154
-    var_type                       shift and go to state 155
-    empty                          shift and go to state 156
+    param_declaration              shift and go to state 155
+    var_type                       shift and go to state 156
+    empty                          shift and go to state 157
 
-state 124
+state 125
 
     (6) array -> LEFT_BRACKET expression RIGHT_BRACKET array .
 
@@ -2798,87 +2569,407 @@ state 124
     RIGHT_PAR       reduce using rule 6 (array -> LEFT_BRACKET expression RIGHT_BRACKET array .)
 
 
-state 125
-
-    (45) expression_1 -> IS_EQUAL_TO exp .
-
-    RIGHT_BRACKET   reduce using rule 45 (expression_1 -> IS_EQUAL_TO exp .)
-    SEMICOLON       reduce using rule 45 (expression_1 -> IS_EQUAL_TO exp .)
-    COMMA           reduce using rule 45 (expression_1 -> IS_EQUAL_TO exp .)
-    RIGHT_PAR       reduce using rule 45 (expression_1 -> IS_EQUAL_TO exp .)
-
-
 state 126
 
-    (46) expression_1 -> NOT_EQUAL_TO exp .
+    (45) expression_1 -> IS_EQUAL_TO sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 46 (expression_1 -> NOT_EQUAL_TO exp .)
-    SEMICOLON       reduce using rule 46 (expression_1 -> NOT_EQUAL_TO exp .)
-    COMMA           reduce using rule 46 (expression_1 -> NOT_EQUAL_TO exp .)
-    RIGHT_PAR       reduce using rule 46 (expression_1 -> NOT_EQUAL_TO exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 158
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 127
 
-    (47) expression_1 -> GREATER_THAN exp .
+    (46) expression_1 -> NOT_EQUAL_TO sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 47 (expression_1 -> GREATER_THAN exp .)
-    SEMICOLON       reduce using rule 47 (expression_1 -> GREATER_THAN exp .)
-    COMMA           reduce using rule 47 (expression_1 -> GREATER_THAN exp .)
-    RIGHT_PAR       reduce using rule 47 (expression_1 -> GREATER_THAN exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 159
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 128
 
-    (48) expression_1 -> LESS_THAN exp .
+    (47) expression_1 -> GREATER_THAN sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 48 (expression_1 -> LESS_THAN exp .)
-    SEMICOLON       reduce using rule 48 (expression_1 -> LESS_THAN exp .)
-    COMMA           reduce using rule 48 (expression_1 -> LESS_THAN exp .)
-    RIGHT_PAR       reduce using rule 48 (expression_1 -> LESS_THAN exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 160
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 129
 
-    (49) expression_1 -> GREATER_THAN_OR_EQUAL_TO exp .
+    (48) expression_1 -> LESS_THAN sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO exp .)
-    SEMICOLON       reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO exp .)
-    COMMA           reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO exp .)
-    RIGHT_PAR       reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 161
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 130
 
-    (50) expression_1 -> LESS_THAN_OR_EQUAL_TO exp .
+    (49) expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO exp .)
-    SEMICOLON       reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO exp .)
-    COMMA           reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO exp .)
-    RIGHT_PAR       reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 162
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 131
 
-    (51) expression_1 -> AND exp .
+    (50) expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 51 (expression_1 -> AND exp .)
-    SEMICOLON       reduce using rule 51 (expression_1 -> AND exp .)
-    COMMA           reduce using rule 51 (expression_1 -> AND exp .)
-    RIGHT_PAR       reduce using rule 51 (expression_1 -> AND exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 163
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 132
 
-    (52) expression_1 -> OR exp .
+    (51) expression_1 -> AND sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
 
-    RIGHT_BRACKET   reduce using rule 52 (expression_1 -> OR exp .)
-    SEMICOLON       reduce using rule 52 (expression_1 -> OR exp .)
-    COMMA           reduce using rule 52 (expression_1 -> OR exp .)
-    RIGHT_PAR       reduce using rule 52 (expression_1 -> OR exp .)
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
 
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 164
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
 
 state 133
+
+    (52) expression_1 -> OR sem_push_operator . exp
+    (54) exp -> . term sem_top_term exp_1
+    (58) term -> . factor sem_top_factor term_1
+    (62) factor -> . LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    (63) factor -> . var_cte
+    (64) factor -> . factor_1 var_cte
+    (19) var_cte -> . CTE_I sem_push_constant_int
+    (20) var_cte -> . CTE_D sem_push_constant_double
+    (21) var_cte -> . cte_b
+    (22) var_cte -> . ID sem_push_operand array
+    (23) var_cte -> . function_call
+    (65) factor_1 -> . PLUS
+    (66) factor_1 -> . MINUS
+    (67) factor_1 -> . empty
+    (24) cte_b -> . TRUE
+    (25) cte_b -> . FALSE
+    (71) function_call -> . ID LEFT_PAR param_call RIGHT_PAR
+    (80) empty -> .
+
+  ! shift/reduce conflict for CTE_I resolved as shift
+  ! shift/reduce conflict for CTE_D resolved as shift
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for TRUE resolved as shift
+  ! shift/reduce conflict for FALSE resolved as shift
+    LEFT_PAR        shift and go to state 62
+    CTE_I           shift and go to state 65
+    CTE_D           shift and go to state 66
+    ID              shift and go to state 68
+    PLUS            shift and go to state 70
+    MINUS           shift and go to state 71
+    TRUE            shift and go to state 73
+    FALSE           shift and go to state 74
+
+  ! CTE_I           [ reduce using rule 80 (empty -> .) ]
+  ! CTE_D           [ reduce using rule 80 (empty -> .) ]
+  ! ID              [ reduce using rule 80 (empty -> .) ]
+  ! TRUE            [ reduce using rule 80 (empty -> .) ]
+  ! FALSE           [ reduce using rule 80 (empty -> .) ]
+
+    exp                            shift and go to state 165
+    term                           shift and go to state 60
+    factor                         shift and go to state 61
+    var_cte                        shift and go to state 63
+    factor_1                       shift and go to state 64
+    cte_b                          shift and go to state 67
+    function_call                  shift and go to state 69
+    empty                          shift and go to state 72
+
+state 134
 
     (54) exp -> term sem_top_term exp_1 .
 
@@ -2896,7 +2987,7 @@ state 133
     RIGHT_PAR       reduce using rule 54 (exp -> term sem_top_term exp_1 .)
 
 
-state 134
+state 135
 
     (55) exp_1 -> PLUS . sem_push_operator exp
     (85) sem_push_operator -> . empty
@@ -2911,10 +3002,10 @@ state 134
     TRUE            reduce using rule 80 (empty -> .)
     FALSE           reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 157
+    sem_push_operator              shift and go to state 166
     empty                          shift and go to state 78
 
-state 135
+state 136
 
     (56) exp_1 -> MINUS . sem_push_operator exp
     (85) sem_push_operator -> . empty
@@ -2929,10 +3020,10 @@ state 135
     TRUE            reduce using rule 80 (empty -> .)
     FALSE           reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 158
+    sem_push_operator              shift and go to state 167
     empty                          shift and go to state 78
 
-state 136
+state 137
 
     (57) exp_1 -> empty .
 
@@ -2950,7 +3041,7 @@ state 136
     RIGHT_PAR       reduce using rule 57 (exp_1 -> empty .)
 
 
-state 137
+state 138
 
     (58) term -> factor sem_top_factor term_1 .
 
@@ -2970,7 +3061,7 @@ state 137
     RIGHT_PAR       reduce using rule 58 (term -> factor sem_top_factor term_1 .)
 
 
-state 138
+state 139
 
     (59) term_1 -> MULTIPLY . sem_push_operator term
     (85) sem_push_operator -> . empty
@@ -2985,10 +3076,10 @@ state 138
     TRUE            reduce using rule 80 (empty -> .)
     FALSE           reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 159
+    sem_push_operator              shift and go to state 168
     empty                          shift and go to state 78
 
-state 139
+state 140
 
     (60) term_1 -> DIVIDE . sem_push_operator term
     (85) sem_push_operator -> . empty
@@ -3003,10 +3094,10 @@ state 139
     TRUE            reduce using rule 80 (empty -> .)
     FALSE           reduce using rule 80 (empty -> .)
 
-    sem_push_operator              shift and go to state 160
+    sem_push_operator              shift and go to state 169
     empty                          shift and go to state 78
 
-state 140
+state 141
 
     (61) term_1 -> empty .
 
@@ -3026,14 +3117,14 @@ state 140
     RIGHT_PAR       reduce using rule 61 (term_1 -> empty .)
 
 
-state 141
+state 142
 
     (62) factor -> LEFT_PAR sem_false_bottom_begin expression . RIGHT_PAR sem_false_bottom_end
 
-    RIGHT_PAR       shift and go to state 161
+    RIGHT_PAR       shift and go to state 170
 
 
-state 142
+state 143
 
     (22) var_cte -> ID sem_push_operand array .
 
@@ -3055,21 +3146,21 @@ state 142
     RIGHT_PAR       reduce using rule 22 (var_cte -> ID sem_push_operand array .)
 
 
-state 143
+state 144
 
     (33) block_2 -> RETURN sem_push_operator expression sem_return_function . SEMICOLON block_3
 
-    SEMICOLON       shift and go to state 162
+    SEMICOLON       shift and go to state 171
 
 
-state 144
+state 145
 
     (95) sem_return_function -> empty .
 
     SEMICOLON       reduce using rule 95 (sem_return_function -> empty .)
 
 
-state 145
+state 146
 
     (43) assignment -> ID sem_push_operand ASSIGN sem_push_operator . expression sem_assign_value SEMICOLON
     (44) expression -> . exp expression_1
@@ -3111,7 +3202,7 @@ state 145
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    expression                     shift and go to state 163
+    expression                     shift and go to state 172
     exp                            shift and go to state 59
     term                           shift and go to state 60
     factor                         shift and go to state 61
@@ -3121,7 +3212,7 @@ state 145
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 146
+state 147
 
     (71) function_call -> ID LEFT_PAR param_call RIGHT_PAR .
 
@@ -3143,14 +3234,14 @@ state 146
     RIGHT_PAR       reduce using rule 71 (function_call -> ID LEFT_PAR param_call RIGHT_PAR .)
 
 
-state 147
+state 148
 
     (72) param_call -> expression param_call_1 .
 
     RIGHT_PAR       reduce using rule 72 (param_call -> expression param_call_1 .)
 
 
-state 148
+state 149
 
     (74) param_call_1 -> COMMA . param_call
     (72) param_call -> . expression param_call_1
@@ -3195,9 +3286,9 @@ state 148
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    param_call                     shift and go to state 164
-    expression                     shift and go to state 117
-    empty                          shift and go to state 118
+    param_call                     shift and go to state 173
+    expression                     shift and go to state 118
+    empty                          shift and go to state 119
     exp                            shift and go to state 59
     term                           shift and go to state 60
     factor                         shift and go to state 61
@@ -3206,53 +3297,53 @@ state 148
     cte_b                          shift and go to state 67
     function_call                  shift and go to state 69
 
-state 149
+state 150
 
     (75) param_call_1 -> empty .
 
     RIGHT_PAR       reduce using rule 75 (param_call_1 -> empty .)
 
 
-state 150
-
-    (68) condition -> IF LEFT_PAR expression RIGHT_PAR . block condition_1
-    (30) block -> . LEFT_BRACE block_1
-
-    LEFT_BRACE      shift and go to state 27
-
-    block                          shift and go to state 165
-
 state 151
 
-    (76) while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR . block
-    (30) block -> . LEFT_BRACE block_1
+    (68) condition -> IF LEFT_PAR expression RIGHT_PAR . sem_evaluate_expression block condition_1 sem_end_condition
+    (96) sem_evaluate_expression -> . empty
+    (80) empty -> .
 
-    LEFT_BRACE      shift and go to state 27
+    LEFT_BRACE      reduce using rule 80 (empty -> .)
 
-    block                          shift and go to state 166
+    sem_evaluate_expression        shift and go to state 174
+    empty                          shift and go to state 175
 
 state 152
 
-    (77) read -> READ sem_push_operator LEFT_PAR exp . RIGHT_PAR sem_read_write SEMICOLON
+    (76) while_cycle -> WHILE sem_start_while LEFT_PAR expression . RIGHT_PAR sem_evaluate_expression block sem_end_while
 
-    RIGHT_PAR       shift and go to state 167
+    RIGHT_PAR       shift and go to state 176
 
 
 state 153
 
-    (78) write -> WRITE sem_push_operator LEFT_PAR exp . RIGHT_PAR sem_read_write SEMICOLON
+    (77) read -> READ sem_push_operator LEFT_PAR exp . RIGHT_PAR sem_read_write SEMICOLON
 
-    RIGHT_PAR       shift and go to state 168
+    RIGHT_PAR       shift and go to state 177
 
 
 state 154
 
-    (11) func_signature_1 -> ID sem_add_func LEFT_PAR param_declaration . RIGHT_PAR block
+    (78) write -> WRITE sem_push_operator LEFT_PAR exp . RIGHT_PAR sem_read_write SEMICOLON
 
-    RIGHT_PAR       shift and go to state 169
+    RIGHT_PAR       shift and go to state 178
 
 
 state 155
+
+    (11) func_signature_1 -> ID sem_add_func LEFT_PAR param_declaration . RIGHT_PAR block
+
+    RIGHT_PAR       shift and go to state 179
+
+
+state 156
 
     (12) param_declaration -> var_type . array ID param_declaration_1
     (6) array -> . LEFT_BRACKET expression RIGHT_BRACKET array
@@ -3262,17 +3353,97 @@ state 155
     LEFT_BRACKET    shift and go to state 31
     ID              reduce using rule 80 (empty -> .)
 
-    array                          shift and go to state 170
+    array                          shift and go to state 180
     empty                          shift and go to state 32
 
-state 156
+state 157
 
     (13) param_declaration -> empty .
 
     RIGHT_PAR       reduce using rule 13 (param_declaration -> empty .)
 
 
-state 157
+state 158
+
+    (45) expression_1 -> IS_EQUAL_TO sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 45 (expression_1 -> IS_EQUAL_TO sem_push_operator exp .)
+    SEMICOLON       reduce using rule 45 (expression_1 -> IS_EQUAL_TO sem_push_operator exp .)
+    COMMA           reduce using rule 45 (expression_1 -> IS_EQUAL_TO sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 45 (expression_1 -> IS_EQUAL_TO sem_push_operator exp .)
+
+
+state 159
+
+    (46) expression_1 -> NOT_EQUAL_TO sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 46 (expression_1 -> NOT_EQUAL_TO sem_push_operator exp .)
+    SEMICOLON       reduce using rule 46 (expression_1 -> NOT_EQUAL_TO sem_push_operator exp .)
+    COMMA           reduce using rule 46 (expression_1 -> NOT_EQUAL_TO sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 46 (expression_1 -> NOT_EQUAL_TO sem_push_operator exp .)
+
+
+state 160
+
+    (47) expression_1 -> GREATER_THAN sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 47 (expression_1 -> GREATER_THAN sem_push_operator exp .)
+    SEMICOLON       reduce using rule 47 (expression_1 -> GREATER_THAN sem_push_operator exp .)
+    COMMA           reduce using rule 47 (expression_1 -> GREATER_THAN sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 47 (expression_1 -> GREATER_THAN sem_push_operator exp .)
+
+
+state 161
+
+    (48) expression_1 -> LESS_THAN sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 48 (expression_1 -> LESS_THAN sem_push_operator exp .)
+    SEMICOLON       reduce using rule 48 (expression_1 -> LESS_THAN sem_push_operator exp .)
+    COMMA           reduce using rule 48 (expression_1 -> LESS_THAN sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 48 (expression_1 -> LESS_THAN sem_push_operator exp .)
+
+
+state 162
+
+    (49) expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator exp .)
+    SEMICOLON       reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator exp .)
+    COMMA           reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 49 (expression_1 -> GREATER_THAN_OR_EQUAL_TO sem_push_operator exp .)
+
+
+state 163
+
+    (50) expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator exp .)
+    SEMICOLON       reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator exp .)
+    COMMA           reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 50 (expression_1 -> LESS_THAN_OR_EQUAL_TO sem_push_operator exp .)
+
+
+state 164
+
+    (51) expression_1 -> AND sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 51 (expression_1 -> AND sem_push_operator exp .)
+    SEMICOLON       reduce using rule 51 (expression_1 -> AND sem_push_operator exp .)
+    COMMA           reduce using rule 51 (expression_1 -> AND sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 51 (expression_1 -> AND sem_push_operator exp .)
+
+
+state 165
+
+    (52) expression_1 -> OR sem_push_operator exp .
+
+    RIGHT_BRACKET   reduce using rule 52 (expression_1 -> OR sem_push_operator exp .)
+    SEMICOLON       reduce using rule 52 (expression_1 -> OR sem_push_operator exp .)
+    COMMA           reduce using rule 52 (expression_1 -> OR sem_push_operator exp .)
+    RIGHT_PAR       reduce using rule 52 (expression_1 -> OR sem_push_operator exp .)
+
+
+state 166
 
     (55) exp_1 -> PLUS sem_push_operator . exp
     (54) exp -> . term sem_top_term exp_1
@@ -3313,7 +3484,7 @@ state 157
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    exp                            shift and go to state 171
+    exp                            shift and go to state 181
     term                           shift and go to state 60
     factor                         shift and go to state 61
     var_cte                        shift and go to state 63
@@ -3322,7 +3493,7 @@ state 157
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 158
+state 167
 
     (56) exp_1 -> MINUS sem_push_operator . exp
     (54) exp -> . term sem_top_term exp_1
@@ -3363,7 +3534,7 @@ state 158
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    exp                            shift and go to state 172
+    exp                            shift and go to state 182
     term                           shift and go to state 60
     factor                         shift and go to state 61
     var_cte                        shift and go to state 63
@@ -3372,7 +3543,7 @@ state 158
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 159
+state 168
 
     (59) term_1 -> MULTIPLY sem_push_operator . term
     (58) term -> . factor sem_top_factor term_1
@@ -3412,7 +3583,7 @@ state 159
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    term                           shift and go to state 173
+    term                           shift and go to state 183
     factor                         shift and go to state 61
     var_cte                        shift and go to state 63
     factor_1                       shift and go to state 64
@@ -3420,7 +3591,7 @@ state 159
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 160
+state 169
 
     (60) term_1 -> DIVIDE sem_push_operator . term
     (58) term -> . factor sem_top_factor term_1
@@ -3460,7 +3631,7 @@ state 160
   ! TRUE            [ reduce using rule 80 (empty -> .) ]
   ! FALSE           [ reduce using rule 80 (empty -> .) ]
 
-    term                           shift and go to state 174
+    term                           shift and go to state 184
     factor                         shift and go to state 61
     var_cte                        shift and go to state 63
     factor_1                       shift and go to state 64
@@ -3468,7 +3639,7 @@ state 160
     function_call                  shift and go to state 69
     empty                          shift and go to state 72
 
-state 161
+state 170
 
     (62) factor -> LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR . sem_false_bottom_end
     (92) sem_false_bottom_end -> . empty
@@ -3491,19 +3662,19 @@ state 161
     COMMA           reduce using rule 80 (empty -> .)
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    sem_false_bottom_end           shift and go to state 175
-    empty                          shift and go to state 176
+    sem_false_bottom_end           shift and go to state 185
+    empty                          shift and go to state 186
 
-state 162
+state 171
 
     (33) block_2 -> RETURN sem_push_operator expression sem_return_function SEMICOLON . block_3
     (35) block_3 -> . RIGHT_BRACE
 
     RIGHT_BRACE     shift and go to state 54
 
-    block_3                        shift and go to state 177
+    block_3                        shift and go to state 187
 
-state 163
+state 172
 
     (43) assignment -> ID sem_push_operand ASSIGN sem_push_operator expression . sem_assign_value SEMICOLON
     (93) sem_assign_value -> . empty
@@ -3511,55 +3682,44 @@ state 163
 
     SEMICOLON       reduce using rule 80 (empty -> .)
 
-    sem_assign_value               shift and go to state 178
-    empty                          shift and go to state 179
+    sem_assign_value               shift and go to state 188
+    empty                          shift and go to state 189
 
-state 164
+state 173
 
     (74) param_call_1 -> COMMA param_call .
 
     RIGHT_PAR       reduce using rule 74 (param_call_1 -> COMMA param_call .)
 
 
-state 165
+state 174
 
-    (68) condition -> IF LEFT_PAR expression RIGHT_PAR block . condition_1
-    (69) condition_1 -> . ELSE block
-    (70) condition_1 -> . empty
+    (68) condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression . block condition_1 sem_end_condition
+    (30) block -> . LEFT_BRACE block_1
+
+    LEFT_BRACE      shift and go to state 27
+
+    block                          shift and go to state 190
+
+state 175
+
+    (96) sem_evaluate_expression -> empty .
+
+    LEFT_BRACE      reduce using rule 96 (sem_evaluate_expression -> empty .)
+
+
+state 176
+
+    (76) while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR . sem_evaluate_expression block sem_end_while
+    (96) sem_evaluate_expression -> . empty
     (80) empty -> .
 
-    ELSE            shift and go to state 181
-    RETURN          reduce using rule 80 (empty -> .)
-    ID              reduce using rule 80 (empty -> .)
-    IF              reduce using rule 80 (empty -> .)
-    WHILE           reduce using rule 80 (empty -> .)
-    READ            reduce using rule 80 (empty -> .)
-    WRITE           reduce using rule 80 (empty -> .)
-    RIGHT_BRACE     reduce using rule 80 (empty -> .)
-    INT             reduce using rule 80 (empty -> .)
-    DOUBLE          reduce using rule 80 (empty -> .)
-    BOOL            reduce using rule 80 (empty -> .)
+    LEFT_BRACE      reduce using rule 80 (empty -> .)
 
-    condition_1                    shift and go to state 180
-    empty                          shift and go to state 182
+    sem_evaluate_expression        shift and go to state 191
+    empty                          shift and go to state 175
 
-state 166
-
-    (76) while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .
-
-    RETURN          reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    ID              reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    IF              reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    WHILE           reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    READ            reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    WRITE           reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    RIGHT_BRACE     reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    INT             reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    DOUBLE          reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-    BOOL            reduce using rule 76 (while_cycle -> WHILE LEFT_PAR expression RIGHT_PAR block .)
-
-
-state 167
+state 177
 
     (77) read -> READ sem_push_operator LEFT_PAR exp RIGHT_PAR . sem_read_write SEMICOLON
     (94) sem_read_write -> . empty
@@ -3567,10 +3727,10 @@ state 167
 
     SEMICOLON       reduce using rule 80 (empty -> .)
 
-    sem_read_write                 shift and go to state 183
-    empty                          shift and go to state 184
+    sem_read_write                 shift and go to state 192
+    empty                          shift and go to state 193
 
-state 168
+state 178
 
     (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR . sem_read_write SEMICOLON
     (94) sem_read_write -> . empty
@@ -3578,26 +3738,26 @@ state 168
 
     SEMICOLON       reduce using rule 80 (empty -> .)
 
-    sem_read_write                 shift and go to state 185
-    empty                          shift and go to state 184
+    sem_read_write                 shift and go to state 194
+    empty                          shift and go to state 193
 
-state 169
+state 179
 
     (11) func_signature_1 -> ID sem_add_func LEFT_PAR param_declaration RIGHT_PAR . block
     (30) block -> . LEFT_BRACE block_1
 
     LEFT_BRACE      shift and go to state 27
 
-    block                          shift and go to state 186
+    block                          shift and go to state 195
 
-state 170
+state 180
 
     (12) param_declaration -> var_type array . ID param_declaration_1
 
-    ID              shift and go to state 187
+    ID              shift and go to state 196
 
 
-state 171
+state 181
 
     (55) exp_1 -> PLUS sem_push_operator exp .
 
@@ -3615,7 +3775,7 @@ state 171
     RIGHT_PAR       reduce using rule 55 (exp_1 -> PLUS sem_push_operator exp .)
 
 
-state 172
+state 182
 
     (56) exp_1 -> MINUS sem_push_operator exp .
 
@@ -3633,7 +3793,7 @@ state 172
     RIGHT_PAR       reduce using rule 56 (exp_1 -> MINUS sem_push_operator exp .)
 
 
-state 173
+state 183
 
     (59) term_1 -> MULTIPLY sem_push_operator term .
 
@@ -3653,7 +3813,7 @@ state 173
     RIGHT_PAR       reduce using rule 59 (term_1 -> MULTIPLY sem_push_operator term .)
 
 
-state 174
+state 184
 
     (60) term_1 -> DIVIDE sem_push_operator term .
 
@@ -3673,7 +3833,7 @@ state 174
     RIGHT_PAR       reduce using rule 60 (term_1 -> DIVIDE sem_push_operator term .)
 
 
-state 175
+state 185
 
     (62) factor -> LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end .
 
@@ -3695,7 +3855,7 @@ state 175
     RIGHT_PAR       reduce using rule 62 (factor -> LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end .)
 
 
-state 176
+state 186
 
     (92) sem_false_bottom_end -> empty .
 
@@ -3717,7 +3877,7 @@ state 176
     RIGHT_PAR       reduce using rule 92 (sem_false_bottom_end -> empty .)
 
 
-state 177
+state 187
 
     (33) block_2 -> RETURN sem_push_operator expression sem_return_function SEMICOLON block_3 .
 
@@ -3737,83 +3897,73 @@ state 177
     MAIN            reduce using rule 33 (block_2 -> RETURN sem_push_operator expression sem_return_function SEMICOLON block_3 .)
 
 
-state 178
+state 188
 
     (43) assignment -> ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value . SEMICOLON
 
-    SEMICOLON       shift and go to state 188
+    SEMICOLON       shift and go to state 197
 
 
-state 179
+state 189
 
     (93) sem_assign_value -> empty .
 
     SEMICOLON       reduce using rule 93 (sem_assign_value -> empty .)
 
 
-state 180
+state 190
 
-    (68) condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .
+    (68) condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block . condition_1 sem_end_condition
+    (69) condition_1 -> . ELSE sem_else_condition block
+    (70) condition_1 -> . empty
+    (80) empty -> .
 
-    RETURN          reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    ID              reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    IF              reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    WHILE           reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    READ            reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    WRITE           reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    RIGHT_BRACE     reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    INT             reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    DOUBLE          reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
-    BOOL            reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR block condition_1 .)
+    ELSE            shift and go to state 199
+    RETURN          reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    IF              reduce using rule 80 (empty -> .)
+    WHILE           reduce using rule 80 (empty -> .)
+    READ            reduce using rule 80 (empty -> .)
+    WRITE           reduce using rule 80 (empty -> .)
+    RIGHT_BRACE     reduce using rule 80 (empty -> .)
+    INT             reduce using rule 80 (empty -> .)
+    DOUBLE          reduce using rule 80 (empty -> .)
+    BOOL            reduce using rule 80 (empty -> .)
 
+    condition_1                    shift and go to state 198
+    empty                          shift and go to state 200
 
-state 181
+state 191
 
-    (69) condition_1 -> ELSE . block
+    (76) while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression . block sem_end_while
     (30) block -> . LEFT_BRACE block_1
 
     LEFT_BRACE      shift and go to state 27
 
-    block                          shift and go to state 189
+    block                          shift and go to state 201
 
-state 182
-
-    (70) condition_1 -> empty .
-
-    RETURN          reduce using rule 70 (condition_1 -> empty .)
-    ID              reduce using rule 70 (condition_1 -> empty .)
-    IF              reduce using rule 70 (condition_1 -> empty .)
-    WHILE           reduce using rule 70 (condition_1 -> empty .)
-    READ            reduce using rule 70 (condition_1 -> empty .)
-    WRITE           reduce using rule 70 (condition_1 -> empty .)
-    RIGHT_BRACE     reduce using rule 70 (condition_1 -> empty .)
-    INT             reduce using rule 70 (condition_1 -> empty .)
-    DOUBLE          reduce using rule 70 (condition_1 -> empty .)
-    BOOL            reduce using rule 70 (condition_1 -> empty .)
-
-
-state 183
+state 192
 
     (77) read -> READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write . SEMICOLON
 
-    SEMICOLON       shift and go to state 190
+    SEMICOLON       shift and go to state 202
 
 
-state 184
+state 193
 
     (94) sem_read_write -> empty .
 
     SEMICOLON       reduce using rule 94 (sem_read_write -> empty .)
 
 
-state 185
+state 194
 
     (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write . SEMICOLON
 
-    SEMICOLON       shift and go to state 191
+    SEMICOLON       shift and go to state 203
 
 
-state 186
+state 195
 
     (11) func_signature_1 -> ID sem_add_func LEFT_PAR param_declaration RIGHT_PAR block .
 
@@ -3821,20 +3971,20 @@ state 186
     MAIN            reduce using rule 11 (func_signature_1 -> ID sem_add_func LEFT_PAR param_declaration RIGHT_PAR block .)
 
 
-state 187
+state 196
 
     (12) param_declaration -> var_type array ID . param_declaration_1
     (14) param_declaration_1 -> . COMMA var_type array ID param_declaration_1
     (15) param_declaration_1 -> . empty
     (80) empty -> .
 
-    COMMA           shift and go to state 193
+    COMMA           shift and go to state 205
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    param_declaration_1            shift and go to state 192
-    empty                          shift and go to state 194
+    param_declaration_1            shift and go to state 204
+    empty                          shift and go to state 206
 
-state 188
+state 197
 
     (43) assignment -> ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON .
 
@@ -3850,23 +4000,74 @@ state 188
     BOOL            reduce using rule 43 (assignment -> ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON .)
 
 
-state 189
+state 198
 
-    (69) condition_1 -> ELSE block .
+    (68) condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 . sem_end_condition
+    (97) sem_end_condition -> . empty
+    (80) empty -> .
 
-    RETURN          reduce using rule 69 (condition_1 -> ELSE block .)
-    ID              reduce using rule 69 (condition_1 -> ELSE block .)
-    IF              reduce using rule 69 (condition_1 -> ELSE block .)
-    WHILE           reduce using rule 69 (condition_1 -> ELSE block .)
-    READ            reduce using rule 69 (condition_1 -> ELSE block .)
-    WRITE           reduce using rule 69 (condition_1 -> ELSE block .)
-    RIGHT_BRACE     reduce using rule 69 (condition_1 -> ELSE block .)
-    INT             reduce using rule 69 (condition_1 -> ELSE block .)
-    DOUBLE          reduce using rule 69 (condition_1 -> ELSE block .)
-    BOOL            reduce using rule 69 (condition_1 -> ELSE block .)
+    RETURN          reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    IF              reduce using rule 80 (empty -> .)
+    WHILE           reduce using rule 80 (empty -> .)
+    READ            reduce using rule 80 (empty -> .)
+    WRITE           reduce using rule 80 (empty -> .)
+    RIGHT_BRACE     reduce using rule 80 (empty -> .)
+    INT             reduce using rule 80 (empty -> .)
+    DOUBLE          reduce using rule 80 (empty -> .)
+    BOOL            reduce using rule 80 (empty -> .)
+
+    sem_end_condition              shift and go to state 207
+    empty                          shift and go to state 208
+
+state 199
+
+    (69) condition_1 -> ELSE . sem_else_condition block
+    (98) sem_else_condition -> . empty
+    (80) empty -> .
+
+    LEFT_BRACE      reduce using rule 80 (empty -> .)
+
+    sem_else_condition             shift and go to state 209
+    empty                          shift and go to state 210
+
+state 200
+
+    (70) condition_1 -> empty .
+
+    RETURN          reduce using rule 70 (condition_1 -> empty .)
+    ID              reduce using rule 70 (condition_1 -> empty .)
+    IF              reduce using rule 70 (condition_1 -> empty .)
+    WHILE           reduce using rule 70 (condition_1 -> empty .)
+    READ            reduce using rule 70 (condition_1 -> empty .)
+    WRITE           reduce using rule 70 (condition_1 -> empty .)
+    RIGHT_BRACE     reduce using rule 70 (condition_1 -> empty .)
+    INT             reduce using rule 70 (condition_1 -> empty .)
+    DOUBLE          reduce using rule 70 (condition_1 -> empty .)
+    BOOL            reduce using rule 70 (condition_1 -> empty .)
 
 
-state 190
+state 201
+
+    (76) while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block . sem_end_while
+    (100) sem_end_while -> . empty
+    (80) empty -> .
+
+    RETURN          reduce using rule 80 (empty -> .)
+    ID              reduce using rule 80 (empty -> .)
+    IF              reduce using rule 80 (empty -> .)
+    WHILE           reduce using rule 80 (empty -> .)
+    READ            reduce using rule 80 (empty -> .)
+    WRITE           reduce using rule 80 (empty -> .)
+    RIGHT_BRACE     reduce using rule 80 (empty -> .)
+    INT             reduce using rule 80 (empty -> .)
+    DOUBLE          reduce using rule 80 (empty -> .)
+    BOOL            reduce using rule 80 (empty -> .)
+
+    sem_end_while                  shift and go to state 211
+    empty                          shift and go to state 212
+
+state 202
 
     (77) read -> READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .
 
@@ -3882,7 +4083,7 @@ state 190
     BOOL            reduce using rule 77 (read -> READ sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
 
 
-state 191
+state 203
 
     (78) write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .
 
@@ -3898,14 +4099,14 @@ state 191
     BOOL            reduce using rule 78 (write -> WRITE sem_push_operator LEFT_PAR exp RIGHT_PAR sem_read_write SEMICOLON .)
 
 
-state 192
+state 204
 
     (12) param_declaration -> var_type array ID param_declaration_1 .
 
     RIGHT_PAR       reduce using rule 12 (param_declaration -> var_type array ID param_declaration_1 .)
 
 
-state 193
+state 205
 
     (14) param_declaration_1 -> COMMA . var_type array ID param_declaration_1
     (16) var_type -> . INT sem_get_type
@@ -3916,16 +4117,96 @@ state 193
     DOUBLE          shift and go to state 10
     BOOL            shift and go to state 11
 
-    var_type                       shift and go to state 195
+    var_type                       shift and go to state 213
 
-state 194
+state 206
 
     (15) param_declaration_1 -> empty .
 
     RIGHT_PAR       reduce using rule 15 (param_declaration_1 -> empty .)
 
 
-state 195
+state 207
+
+    (68) condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .
+
+    RETURN          reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    ID              reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    IF              reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    WHILE           reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    READ            reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    WRITE           reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    RIGHT_BRACE     reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    INT             reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    DOUBLE          reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+    BOOL            reduce using rule 68 (condition -> IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition .)
+
+
+state 208
+
+    (97) sem_end_condition -> empty .
+
+    RETURN          reduce using rule 97 (sem_end_condition -> empty .)
+    ID              reduce using rule 97 (sem_end_condition -> empty .)
+    IF              reduce using rule 97 (sem_end_condition -> empty .)
+    WHILE           reduce using rule 97 (sem_end_condition -> empty .)
+    READ            reduce using rule 97 (sem_end_condition -> empty .)
+    WRITE           reduce using rule 97 (sem_end_condition -> empty .)
+    RIGHT_BRACE     reduce using rule 97 (sem_end_condition -> empty .)
+    INT             reduce using rule 97 (sem_end_condition -> empty .)
+    DOUBLE          reduce using rule 97 (sem_end_condition -> empty .)
+    BOOL            reduce using rule 97 (sem_end_condition -> empty .)
+
+
+state 209
+
+    (69) condition_1 -> ELSE sem_else_condition . block
+    (30) block -> . LEFT_BRACE block_1
+
+    LEFT_BRACE      shift and go to state 27
+
+    block                          shift and go to state 214
+
+state 210
+
+    (98) sem_else_condition -> empty .
+
+    LEFT_BRACE      reduce using rule 98 (sem_else_condition -> empty .)
+
+
+state 211
+
+    (76) while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .
+
+    RETURN          reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    ID              reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    IF              reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    WHILE           reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    READ            reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    WRITE           reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    RIGHT_BRACE     reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    INT             reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    DOUBLE          reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+    BOOL            reduce using rule 76 (while_cycle -> WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while .)
+
+
+state 212
+
+    (100) sem_end_while -> empty .
+
+    RETURN          reduce using rule 100 (sem_end_while -> empty .)
+    ID              reduce using rule 100 (sem_end_while -> empty .)
+    IF              reduce using rule 100 (sem_end_while -> empty .)
+    WHILE           reduce using rule 100 (sem_end_while -> empty .)
+    READ            reduce using rule 100 (sem_end_while -> empty .)
+    WRITE           reduce using rule 100 (sem_end_while -> empty .)
+    RIGHT_BRACE     reduce using rule 100 (sem_end_while -> empty .)
+    INT             reduce using rule 100 (sem_end_while -> empty .)
+    DOUBLE          reduce using rule 100 (sem_end_while -> empty .)
+    BOOL            reduce using rule 100 (sem_end_while -> empty .)
+
+
+state 213
 
     (14) param_declaration_1 -> COMMA var_type . array ID param_declaration_1
     (6) array -> . LEFT_BRACKET expression RIGHT_BRACKET array
@@ -3935,30 +4216,46 @@ state 195
     LEFT_BRACKET    shift and go to state 31
     ID              reduce using rule 80 (empty -> .)
 
-    array                          shift and go to state 196
+    array                          shift and go to state 215
     empty                          shift and go to state 32
 
-state 196
+state 214
+
+    (69) condition_1 -> ELSE sem_else_condition block .
+
+    RETURN          reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    ID              reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    IF              reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    WHILE           reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    READ            reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    WRITE           reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    RIGHT_BRACE     reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    INT             reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    DOUBLE          reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+    BOOL            reduce using rule 69 (condition_1 -> ELSE sem_else_condition block .)
+
+
+state 215
 
     (14) param_declaration_1 -> COMMA var_type array . ID param_declaration_1
 
-    ID              shift and go to state 197
+    ID              shift and go to state 216
 
 
-state 197
+state 216
 
     (14) param_declaration_1 -> COMMA var_type array ID . param_declaration_1
     (14) param_declaration_1 -> . COMMA var_type array ID param_declaration_1
     (15) param_declaration_1 -> . empty
     (80) empty -> .
 
-    COMMA           shift and go to state 193
+    COMMA           shift and go to state 205
     RIGHT_PAR       reduce using rule 80 (empty -> .)
 
-    param_declaration_1            shift and go to state 198
-    empty                          shift and go to state 194
+    param_declaration_1            shift and go to state 217
+    empty                          shift and go to state 206
 
-state 198
+state 217
 
     (14) param_declaration_1 -> COMMA var_type array ID param_declaration_1 .
 
@@ -4017,56 +4314,11 @@ WARNING: shift/reduce conflict for CTE_D in state 82 resolved as shift
 WARNING: shift/reduce conflict for ID in state 82 resolved as shift
 WARNING: shift/reduce conflict for TRUE in state 82 resolved as shift
 WARNING: shift/reduce conflict for FALSE in state 82 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 83 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 83 resolved as shift
-WARNING: shift/reduce conflict for ID in state 83 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 83 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 83 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 93 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 93 resolved as shift
-WARNING: shift/reduce conflict for ID in state 93 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 93 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 93 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 94 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 94 resolved as shift
-WARNING: shift/reduce conflict for ID in state 94 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 94 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 94 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 95 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 95 resolved as shift
-WARNING: shift/reduce conflict for ID in state 95 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 95 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 95 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 96 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 96 resolved as shift
-WARNING: shift/reduce conflict for ID in state 96 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 96 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 96 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 97 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 97 resolved as shift
-WARNING: shift/reduce conflict for ID in state 97 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 97 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 97 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 98 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 98 resolved as shift
-WARNING: shift/reduce conflict for ID in state 98 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 98 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 98 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 99 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 99 resolved as shift
-WARNING: shift/reduce conflict for ID in state 99 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 99 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 99 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 100 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 100 resolved as shift
-WARNING: shift/reduce conflict for ID in state 100 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 100 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 100 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 106 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 106 resolved as shift
-WARNING: shift/reduce conflict for ID in state 106 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 106 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 106 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 107 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 107 resolved as shift
+WARNING: shift/reduce conflict for ID in state 107 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 107 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 107 resolved as shift
 WARNING: shift/reduce conflict for CTE_I in state 121 resolved as shift
 WARNING: shift/reduce conflict for CTE_D in state 121 resolved as shift
 WARNING: shift/reduce conflict for ID in state 121 resolved as shift
@@ -4077,33 +4329,78 @@ WARNING: shift/reduce conflict for CTE_D in state 122 resolved as shift
 WARNING: shift/reduce conflict for ID in state 122 resolved as shift
 WARNING: shift/reduce conflict for TRUE in state 122 resolved as shift
 WARNING: shift/reduce conflict for FALSE in state 122 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 145 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 145 resolved as shift
-WARNING: shift/reduce conflict for ID in state 145 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 145 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 145 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 148 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 148 resolved as shift
-WARNING: shift/reduce conflict for ID in state 148 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 148 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 148 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 157 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 157 resolved as shift
-WARNING: shift/reduce conflict for ID in state 157 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 157 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 157 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 158 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 158 resolved as shift
-WARNING: shift/reduce conflict for ID in state 158 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 158 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 158 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 159 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 159 resolved as shift
-WARNING: shift/reduce conflict for ID in state 159 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 159 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 159 resolved as shift
-WARNING: shift/reduce conflict for CTE_I in state 160 resolved as shift
-WARNING: shift/reduce conflict for CTE_D in state 160 resolved as shift
-WARNING: shift/reduce conflict for ID in state 160 resolved as shift
-WARNING: shift/reduce conflict for TRUE in state 160 resolved as shift
-WARNING: shift/reduce conflict for FALSE in state 160 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 123 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 123 resolved as shift
+WARNING: shift/reduce conflict for ID in state 123 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 123 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 123 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 126 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 126 resolved as shift
+WARNING: shift/reduce conflict for ID in state 126 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 126 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 126 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 127 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 127 resolved as shift
+WARNING: shift/reduce conflict for ID in state 127 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 127 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 127 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 128 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 128 resolved as shift
+WARNING: shift/reduce conflict for ID in state 128 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 128 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 128 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 129 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 129 resolved as shift
+WARNING: shift/reduce conflict for ID in state 129 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 129 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 129 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 130 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 130 resolved as shift
+WARNING: shift/reduce conflict for ID in state 130 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 130 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 130 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 131 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 131 resolved as shift
+WARNING: shift/reduce conflict for ID in state 131 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 131 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 131 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 132 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 132 resolved as shift
+WARNING: shift/reduce conflict for ID in state 132 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 132 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 132 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 133 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 133 resolved as shift
+WARNING: shift/reduce conflict for ID in state 133 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 133 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 133 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 146 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 146 resolved as shift
+WARNING: shift/reduce conflict for ID in state 146 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 146 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 146 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 149 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 149 resolved as shift
+WARNING: shift/reduce conflict for ID in state 149 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 149 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 149 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 166 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 166 resolved as shift
+WARNING: shift/reduce conflict for ID in state 166 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 166 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 166 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 167 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 167 resolved as shift
+WARNING: shift/reduce conflict for ID in state 167 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 167 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 167 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 168 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 168 resolved as shift
+WARNING: shift/reduce conflict for ID in state 168 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 168 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 168 resolved as shift
+WARNING: shift/reduce conflict for CTE_I in state 169 resolved as shift
+WARNING: shift/reduce conflict for CTE_D in state 169 resolved as shift
+WARNING: shift/reduce conflict for ID in state 169 resolved as shift
+WARNING: shift/reduce conflict for TRUE in state 169 resolved as shift
+WARNING: shift/reduce conflict for FALSE in state 169 resolved as shift
