@@ -59,7 +59,7 @@ def p_var_declaration(p):
     '''
     
 def p_array(p):
-    '''array : LEFT_BRACKET expression RIGHT_BRACKET array
+    '''array : LEFT_BRACKET mega_exp RIGHT_BRACKET array
     | empty
     '''
 
@@ -125,7 +125,7 @@ def p_block_1(p):
 
 # Added RETURN to block's grammar; values can be returned at any point within block
 def p_block_2(p):
-    '''block_2 : RETURN sem_push_operator expression sem_return_function SEMICOLON block_3
+    '''block_2 : RETURN sem_push_operator mega_exp sem_return_function SEMICOLON block_3
     | block_3
     '''
 
@@ -145,30 +145,39 @@ def p_statement(p):
     '''
 
 def p_assignment(p):
-    '''assignment : ID sem_push_operand ASSIGN sem_push_operator expression sem_assign_value SEMICOLON
+    '''assignment : ID sem_push_operand ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
     '''
 
-
-def p_expression(p):
-    '''expression : exp expression_1
+def p_mega_exp(p):
+    '''mega_exp : hyper_exp mega_exp_1
+    '''
+# Logical operators
+def p_mega_exp_1(p):
+    '''mega_exp_1 : AND sem_push_operator mega_exp sem_top_logical
+    | OR sem_push_operator mega_exp sem_top_logical
+    | empty
     '''
 
-def p_expression_1(p):
-    '''expression_1 : IS_EQUAL_TO sem_push_operator exp
-    | NOT_EQUAL_TO sem_push_operator exp
-    | GREATER_THAN sem_push_operator exp
-    | LESS_THAN sem_push_operator exp
-    | GREATER_THAN_OR_EQUAL_TO sem_push_operator exp
-    | LESS_THAN_OR_EQUAL_TO sem_push_operator exp
-    | AND sem_push_operator exp
-    | OR sem_push_operator exp 
+def p_hyper_exp(p):
+    '''hyper_exp : exp hyper_exp_1 
+    '''
+
+# Relational operators
+def p_hyper_exp_1(p):
+    '''hyper_exp_1 : IS_EQUAL_TO sem_push_operator exp sem_top_relational
+    | NOT_EQUAL_TO sem_push_operator exp sem_top_relational
+    | GREATER_THAN sem_push_operator exp sem_top_relational
+    | LESS_THAN sem_push_operator exp sem_top_relational
+    | GREATER_THAN_OR_EQUAL_TO sem_push_operator exp sem_top_relational
+    | LESS_THAN_OR_EQUAL_TO sem_push_operator exp sem_top_relational
     | empty 
     '''
 
 def p_exp(p):
-    '''exp : term sem_top_term exp_1
+    '''exp : term sem_top_term exp_1 
     '''
 
+# Arithmetic operators
 def p_exp_1(p):
     '''exp_1 : PLUS sem_push_operator exp
     | MINUS sem_push_operator exp
@@ -179,6 +188,7 @@ def p_term(p):
     '''term : factor sem_top_factor term_1
     '''
 
+# Arithmetic operators
 def p_term_1(p):
     '''term_1 : MULTIPLY sem_push_operator term
     | DIVIDE sem_push_operator term
@@ -186,7 +196,7 @@ def p_term_1(p):
     '''
 
 def p_factor(p):
-    '''factor : LEFT_PAR sem_false_bottom_begin expression RIGHT_PAR sem_false_bottom_end
+    '''factor : LEFT_PAR sem_false_bottom_begin mega_exp RIGHT_PAR sem_false_bottom_end
     | var_cte 
     | factor_1 var_cte
     '''
@@ -198,7 +208,7 @@ def p_factor_1(p):
     '''
 
 def p_condition(p):
-    '''condition : IF LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block condition_1 sem_end_condition
+    '''condition : IF LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block condition_1 sem_fill_goto
     '''
 
 def p_condition_1(p):
@@ -211,7 +221,7 @@ def p_function_call(p):
     '''
 
 def p_param_call(p):
-    '''param_call : expression param_call_1
+    '''param_call : mega_exp param_call_1
     | empty
     '''
 
@@ -221,7 +231,7 @@ def p_param_call_1(p):
     '''
 
 def p_while_cycle(p):
-    '''while_cycle : WHILE sem_start_while LEFT_PAR expression RIGHT_PAR sem_evaluate_expression block sem_end_while
+    '''while_cycle : WHILE sem_start_while LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block sem_end_while
     '''
 
 def p_read(p):
@@ -347,13 +357,10 @@ def p_sem_push_operand(p):
     '''sem_push_operand : empty
     '''
     operand = p[-1]
-    
     # Check if variable/operand is declared and get its type
     variable_type = functions_directory.find_variable(operand)
-
     operands_stack.append(operand)
     # print(operand, " was pushed to operands stack")
-
     types_stack.append(variable_type)
     # print(variable_type, " was pushed to types stack")
 
@@ -421,54 +428,62 @@ def p_sem_return_function(p):
     '''sem_return_function : empty
     '''
     q = one_operation_quad(operators_stack, operands_stack)
-    quadruples_list.append(q)  
+    quadruples_list.append(q)
 
-# Conditions and cycles
-def p_sem_evaluate_expression(p):
-    '''sem_evaluate_expression : empty
+# Expressions
+def p_sem_top_logical(p):
+    '''sem_top_logical : 
     '''
     global temp_counter
+
     if(operators_stack[-1:]):
-        operator = operators_stack[-1]
-        if (operator == Operations.GREATERTHAN.value or operator == Operations.LESSTHAN.value
-        or operator == Operations.GREATERTHANOREQ.value or operator == Operations.LESSTHANOREQ.values):
-            # Get right operator and its type
-            right_operand = operands_stack.pop()
-            right_operand_type = types_stack.pop()
-            # Get left operator and its type
-            left_operand = operands_stack.pop()
-            left_operand_type = types_stack.pop()
-            # Search cube for result type
-            expression_type = int(SemanticCube[operator, left_operand_type, right_operand_type])
-            print("expression type:", expression_type)
+        if (operators_stack[-1] == Operations.AND.value or operators_stack[-1] == Operations.OR.value):
+            q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            temp_counter+=1
 
-            if(expression_type == -1):
-                print("Error, type mismatch, expression is not boolean")
-                exit(1)
-            else:
-                result = operands_stack.pop()
-                q = define_quad(Operations.GOTOF.value, result, -1, "")
-                quadruples_list.append(q)
-                temp_counter+=1
-                jumps_stack.append(temp_counter-1)
+def p_sem_top_relational(p):
+    '''sem_top_relational : 
+    '''
+    global temp_counter
 
+    if(operators_stack[-1:]):
+        if (operators_stack[-1] == Operations.GREATERTHAN.value or operators_stack[-1] == Operations.LESSTHAN.value
+        or operators_stack[-1] == Operations.GREATERTHANOREQ.value or operators_stack[-1] == Operations.LESSTHANOREQ.values):
+            q = create_quad(temp_counter, operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            temp_counter+=1
+
+# Conditions and cycles
 def p_sem_end_condition(p):
     '''sem_end_condition : empty
     '''
+    global temp_counter
+    if (operands_stack[-1:]):
+        q = create_GOTOF_quad(operands_stack, types_stack)
+        quadruples_list.append(q)
+        temp_counter+=1
+        jumps_stack.append(temp_counter-1)
+
+def p_sem_fill_goto(p):
+    '''sem_fill_goto : empty
+    '''
+    global temp_counter
     end = jumps_stack.pop()
     fill(quadruples_list, end, temp_counter)
-
 
 def p_sem_else_condition(p):
     '''sem_else_condition : empty
     '''
     global temp_counter
-    q = define_quad(Operations.GOTO.value, -1, -1, "")
-    quadruples_list.append(q)
-    temp_counter+=1
-    false = jumps_stack.pop()
-    jumps_stack.append(temp_counter-1)
-    fill(quadruples_list, false, temp_counter)
+
+    if (operands_stack[-1:]):
+        q = create_GOTO_quad(types_stack)
+        quadruples_list.append(q)
+        temp_counter+=1
+        false = jumps_stack.pop()
+        jumps_stack.append(temp_counter-1)
+        fill(quadruples_list, false, temp_counter)
 
 def p_sem_start_while(p):
     '''sem_start_while : empty
@@ -482,6 +497,7 @@ def p_sem_end_while(p):
     global temp_counter
     end = jumps_stack.pop()
     ret = jumps_stack.pop()
+
     q = define_quad(Operations.GOTO.value, -1, -1, ret) 
     quadruples_list.append(q)
     temp_counter+=1
@@ -501,6 +517,8 @@ if __name__ == '__main__':
 
             parser_Mathrix.parse(data)
             print_quads(quadruples_list)
+            print("# of quads: ", temp_counter+1)
+
         except EOFError:
             print(EOFError)
     else:
@@ -508,7 +526,7 @@ if __name__ == '__main__':
 
 # while True:
 #     try:
-#         s = input('mathrix > ')   # usar input()
+#         s = input('mathrix > ')   # use input()
 #     except EOFError:
 #         break
 #     parser_Mathrix.parse(s)

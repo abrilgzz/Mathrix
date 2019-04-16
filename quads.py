@@ -30,6 +30,31 @@ def create_quad(temp_counter, operators_stack, operands_stack, types_stack):
         quad = define_quad(operator, left_operand, right_operand, temp)
         return quad
 
+# Create GOTOF quad
+def create_GOTOF_quad(operands_stack, types_stack):
+        expression_type = types_stack.pop()
+
+        # Check if expression type is boolean
+        if(expression_type == 2):
+                result = operands_stack.pop()
+                q = define_quad(Operations.GOTOF.value, result, -1, -1)
+                return q
+        else:
+                print("Error, type mismatch, expression is not boolean")
+                exit(1)
+
+# Create GOTO quad
+def create_GOTO_quad(types_stack):
+        expression_type = types_stack.pop()
+
+        # Check if expression type is boolean
+        if(expression_type == 2):
+                q = define_quad(Operations.GOTO.value, -1, -1, -1)
+                return q
+        else:
+                print("Error, type mismatch, expression is not boolean")
+                exit(1)
+
 # Creates quadruple for assignments
 def assignment_quad(operators_stack, operands_stack, types_stack):
         operator = operators_stack.pop()
@@ -57,12 +82,11 @@ def one_operation_quad(operators_stack, operands_stack):
         return quad
 
 # Check fill function
-def fill(quadruples_list, result, temp_counter):
-        q = quadruples_list[temp_counter]
-        quadruples_list[temp_counter]['result'] = result
+def fill(quadruples_list, end, temp_counter):
+        quadruples_list[end]['result'] = temp_counter
 
 def print_quads(quadruples_list):
-    counter = 1
+    counter = 0
     print("Quadruples: ")
     for q in quadruples_list:
             print("q", counter, ": ", q)
