@@ -31,7 +31,6 @@ class FunctionsTable:
        # Variable is not found 
         print("Undefined variable")
         exit(1)
-    
 
     # Add variable
     def add_variable(self, item, current_function):
@@ -42,7 +41,11 @@ class FunctionsTable:
             exit(1)
         else:
             self._functions[current_function.function_id].variables_directory[item.var_id] = item.var_type
-            # print("Variable added")
-            # print(self._functions[current_function.function_id].variables_directory.items())
-        
-        
+            #print("Variable added")
+            #print(self._functions[current_function.function_id].variables_directory.items())
+    
+    # Add parameter
+    def add_param(self, item, current_function):
+        self._functions[current_function.function_id].params_list.append(item.var_type)
+        # print("Parameter type added")
+        # print(self._functions[current_function.function_id].params_list)

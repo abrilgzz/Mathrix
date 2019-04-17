@@ -27,7 +27,7 @@ from quads import *
 functions_directory = FunctionsTable()
 
 # Global function
-Mathrix = Function('Mathrix', Types.VOID, {})
+Mathrix = Function('Mathrix', Types.VOID, {}, [], 0)
 functions_directory._functions['Mathrix'] = Mathrix
 
 current_function = functions_directory._functions['Mathrix']
@@ -41,6 +41,7 @@ jumps_stack = []
 quadruples_list = []
 temp_counter = 0
 
+parameter_counter = 0
 
 def p_start(p):
     '''start : global_declaration
@@ -79,12 +80,8 @@ def p_func_signature_1(p):
     '''
 
 def p_param_declaration(p):
-    '''param_declaration : var_type array ID param_declaration_1
-    | empty
-    '''
-
-def p_param_declaration_1(p):
-    '''param_declaration_1 : COMMA var_type array ID param_declaration_1
+    '''param_declaration : var_type array ID sem_add_param
+    | var_type array ID sem_add_param COMMA param_declaration
     | empty
     '''
 
@@ -138,7 +135,7 @@ def p_statement(p):
     '''statement : var_declaration
     | assignment
     | condition
-    | function_call SEMICOLON
+    | function_call SEMICOLON 
     | while_cycle
     | read
     | write
@@ -217,16 +214,12 @@ def p_condition_1(p):
     '''
 
 def p_function_call(p):
-    '''function_call : ID LEFT_PAR param_call RIGHT_PAR 
+    '''function_call : ID sem_check_function LEFT_PAR sem_create_era param_call RIGHT_PAR sem_count_params sem_gosub
     '''
 
 def p_param_call(p):
-    '''param_call : mega_exp param_call_1
-    | empty
-    '''
-
-def p_param_call_1(p):
-    '''param_call_1 : COMMA param_call
+    '''param_call : mega_exp sem_check_param 
+    | mega_exp sem_check_param COMMA param_call
     | empty
     '''
 
@@ -279,10 +272,10 @@ def p_sem_get_type(p):
 def p_sem_add_func(p):
     '''sem_add_func : empty
     '''
-    global current_function
+    global current_function, temp_counter
     function_id = p[-1]
     
-    f = Function(function_id, current_type, {})
+    f = Function(function_id, current_type, {}, [], temp_counter)
     functions_directory.add_function(f)
     current_function = f
     #print(functions_directory)
@@ -290,8 +283,13 @@ def p_sem_add_func(p):
 def p_sem_end_func(p):
     '''sem_end_func : empty
     '''
-    global functions_directory
+    global functions_directory, temp_counter
+    # Release the current variables table
     functions_directory._functions[current_function.function_id].variables_directory.clear()
+    # Generate an action to end the procedure
+    q = define_quad (Operations.ENDPROC.value, -1, -1, -1)
+    quadruples_list.append(q)
+    temp_counter+=1
     #print(functions_directory)
 
 def p_sem_add_var(p):
@@ -502,6 +500,96 @@ def p_sem_end_while(p):
     quadruples_list.append(q)
     temp_counter+=1
     fill(quadruples_list, end, temp_counter)
+
+# Functions
+def p_sem_add_param(p):
+    '''sem_add_param : empty
+    '''
+    v = Variable(p[-1], current_type)
+    #print(p[-1])
+
+    global functions_directory, current_function
+    # Parameter = local variable
+    functions_directory.add_variable(v, current_function)
+    functions_directory.add_param(v, current_function)
+
+def p_sem_check_function(p):
+    '''sem_check_function : empty
+    '''
+    function_name = p[-1]
+
+    global functions_directory, current_function
+    # Verify that the function exists in functions directory
+    current_function = functions_directory.find_function(function_name)
+
+def p_sem_create_era(p):
+    '''sem_create_era : empty
+    '''
+    global temp_counter, current_function, parameter_counter
+    # Start the parameter counter in 0
+    parameter_counter = 0
+    # Get how many parameters of each type the function has
+    local_ints = current_function.params_list.count(Types.INT.value)
+    local_doubles = current_function.params_list.count(Types.DOUBLE.value)
+    local_bools = current_function.params_list.count(Types.BOOL.value)
+    # print("ints: ", local_ints, " doubles: ", local_doubles, " bools: ", local_bools)
+
+    # Generate action ERA size
+
+    #Create quad
+    q = define_quad(Operations.ERA.value, current_function.function_id, -1, -1) 
+    quadruples_list.append(q)
+    temp_counter+=1
+
+def p_sem_check_param(p):
+    '''sem_check_param : empty
+    '''
+    global temp_counter, parameter_counter, current_function
+
+    argument = operands_stack.pop()
+    argument_type = types_stack.pop()
+    
+    if(parameter_counter >= len(current_function.params_list)):
+        print("Error, invalid number of parameters.")
+        exit(1)
+
+    if (len(current_function.params_list) > 0):
+        # Verify argument type against current parameter
+        current_param_type = current_function.params_list[parameter_counter]
+
+        if(argument_type == current_param_type):
+            # Generate PARAM quad
+            q = define_quad(Operations.PARAM.value, argument, -1, "param #" + str(parameter_counter))
+            quadruples_list.append(q)
+            temp_counter+=1
+            parameter_counter+=1
+        else:
+            print("Error, invalid parameter type: {}, expecting: {}".format(argument_type, current_param_type))
+            exit(1)
+
+def p_sem_count_params(p):
+    '''sem_count_params : empty
+    '''
+    global parameter_counter
+
+    total_parameters = len(current_function.params_list)
+
+    # Coherence in number of parameters
+    if (total_parameters != parameter_counter):
+        print("Error, invalid number of parameters.")
+        exit(1)
+
+def p_sem_gosub(p):
+    '''sem_gosub : empty
+    '''
+    global temp_counter
+
+    # Generate GOSUB quad
+    q = define_quad(Operations.GOSUB.value, current_function.function_id, -1, current_function.start_address)
+    quadruples_list.append(q)
+    temp_counter+=1
+
+
 
 parser_Mathrix = yacc.yacc()
 

@@ -31,6 +31,13 @@ class Operations(IntEnum):
     GOTOF = 19
     GOTOT = 20
     GOTO = 21
+    # Functions
+    PARAM = 22
+    GOSUB = 23
+    ERA = 24
+    ENDPROC = 25
+    
+
     
 class Errors(IntEnum):
     MISMATCH = -1
