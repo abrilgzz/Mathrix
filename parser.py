@@ -22,9 +22,12 @@ from functions_table import Function
 from functions_table import Variable
 from functions_table import FunctionsTable
 
+from memory import Memory
+
 from quads import *
 
 functions_directory = FunctionsTable()
+memory = Memory()
 
 # Global function
 Mathrix = Function('Mathrix', Types.VOID, {}, [], 0)
@@ -295,12 +298,16 @@ def p_sem_end_func(p):
 def p_sem_add_var(p):
     '''sem_add_var : empty
     '''
-    v = Variable(p[-1], current_type)
-    #print(p[-1])
+    global current_function, functions_directory
 
-    global functions_directory, current_function
+    v = Variable(p[-1], current_type, -1)
+    v.var_address = memory.set_address(v, current_function.function_id)
+
+    # print(v.var_id, v.var_type, v.var_address)
+    # print(p[-1])
+
     functions_directory.add_variable(v, current_function)
-    # print(functions_directory._functions[current_function.function_id].variables_directory)
+    #print(functions_directory._functions[current_function.function_id].variables_directory)
 
 
 def p_sem_push_operator(p):
@@ -505,7 +512,8 @@ def p_sem_end_while(p):
 def p_sem_add_param(p):
     '''sem_add_param : empty
     '''
-    v = Variable(p[-1], current_type)
+    variable_address = 0
+    v = Variable(p[-1], current_type, variable_address)
     #print(p[-1])
 
     global functions_directory, current_function

@@ -1,4 +1,6 @@
-class Function:
+from variable import Variable
+
+class Function(dict):
     def __init__(self, function_id, function_type, variables_directory, params_list, start_address):
         self.function_id = function_id
         self.function_type = function_type
@@ -6,6 +8,10 @@ class Function:
         self.params_list = params_list
         self.start_address = start_address
     
-    def declareVar(self, variable):
-        self.variables_directory[variable.var_id] = variable.var_type
+    def declare_variable(self, var_id, var_type, var_address):
+        # Create variable
+        v = Variable(var_id, var_type, var_address)
+        # Append to variables_directory
+        self.variables_directory[var_id] = v
+       
         

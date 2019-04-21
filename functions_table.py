@@ -27,7 +27,7 @@ class FunctionsTable:
     def find_variable(self, var_id):
         for f in self._functions:
             if var_id in self._functions[f].variables_directory:
-                return self._functions[f].variables_directory[var_id]
+                return self._functions[f].variables_directory[var_id].var_type
        # Variable is not found 
         print("Undefined variable")
         exit(1)
@@ -40,9 +40,11 @@ class FunctionsTable:
             print("Error, variable {} already exists".format(item.var_id))
             exit(1)
         else:
-            self._functions[current_function.function_id].variables_directory[item.var_id] = item.var_type
-            #print("Variable added")
-            #print(self._functions[current_function.function_id].variables_directory.items())
+            f = self._functions[current_function.function_id]
+            f.declare_variable(item.var_id, item.var_type, item.var_address)
+            # self._functions[current_function.function_id].variables_directory[item.var_id] = item.var_type
+            # print("Variable added")
+            # print(self._functions[current_function.function_id].variables_directory.items())
     
     # Add parameter
     def add_param(self, item, current_function):
