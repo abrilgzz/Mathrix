@@ -14,4 +14,5 @@ class Function(dict):
         # Append to variables_directory
         self.variables_directory[var_id] = v
        
-        
+    def __str__(self):
+        return str(self.__dict__)

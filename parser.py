@@ -30,7 +30,7 @@ functions_directory = FunctionsTable()
 memory = Memory()
 
 # Global function
-Mathrix = Function('Mathrix', Types.VOID, {}, [], 0)
+Mathrix = Function('Mathrix', Types.VOID.value, {}, [], 0)
 functions_directory._functions['Mathrix'] = Mathrix
 
 current_function = functions_directory._functions['Mathrix']
@@ -364,7 +364,11 @@ def p_sem_push_operand(p):
     operand = p[-1]
     # Check if variable/operand is declared and get its type
     variable_type = functions_directory.find_variable(operand)
-    operands_stack.append(operand)
+
+    # Add variable's memory address to the operands stack
+    var_memory_address = functions_directory.find_var_address(operand)
+    operands_stack.append(var_memory_address)
+
     # print(operand, " was pushed to operands stack")
     types_stack.append(variable_type)
     # print(variable_type, " was pushed to types stack")
@@ -512,11 +516,12 @@ def p_sem_end_while(p):
 def p_sem_add_param(p):
     '''sem_add_param : empty
     '''
-    variable_address = 0
-    v = Variable(p[-1], current_type, variable_address)
+    global functions_directory, current_function
+    
+    v = Variable(p[-1], current_type, -1)
+    v.var_address = memory.set_address(v, current_function.function_id)
     #print(p[-1])
 
-    global functions_directory, current_function
     # Parameter = local variable
     functions_directory.add_variable(v, current_function)
     functions_directory.add_param(v, current_function)
@@ -614,6 +619,8 @@ if __name__ == '__main__':
             parser_Mathrix.parse(data)
             print_quads(quadruples_list)
             print("# of quads: ", temp_counter+1)
+            print("Functions directory: ")
+            functions_directory.print_table()
 
         except EOFError:
             print(EOFError)

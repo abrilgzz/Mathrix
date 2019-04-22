@@ -4,5 +4,8 @@ class Variable(dict):
         self.var_type = var_type
         self.var_address = var_address
 
-    def __getattr__(self, attr):
-        return self[attr]
+    # def __getattr__(self, attr):
+    #     return self[attr]
+
+    def __str__(self):
+        return str(self.__dict__)

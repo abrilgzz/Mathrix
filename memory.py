@@ -14,10 +14,15 @@ class Memory:
         self.local_double = 13000
         self.local_bool = 16000
 
-        # Temp variable addresses
-        self.temp_int = 21000
-        self.temp_double = 23000
-        self.temp_bool = 26000
+        # # Temporal variable addresses
+        # self.temp_int = 21000
+        # self.temp_double = 23000
+        # self.temp_bool = 26000
+
+        # # Constant variable addresses
+        # self.cte_int = 31000
+        # self.cte_double = 33000
+        # self.cte_bool = 36000
 
         # Variable counters
         self.global_int_counter = 0
@@ -27,6 +32,14 @@ class Memory:
         self.local_int_counter = 0
         self.local_double_counter = 0
         self.local_bool_counter = 0
+
+        # self.temp_int_counter = 0
+        # self.temp_double_counter = 0
+        # self.temp_bool_counter = 0
+
+        # self.cte_int_counter = 0
+        # self.cte_double_counter = 0
+        # self.cte_bool_counter = 0
 
 
     def set_address(self, variable, function_id):
