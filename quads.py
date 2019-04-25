@@ -7,7 +7,7 @@ def define_quad(operator, left_operand, right_operand, result):
     quad = {'operator' : operator, 'left_operand' : left_operand, 'right_operand' : right_operand, 'result' : result}
     return quad
 
-def create_quad(temp_counter, operators_stack, operands_stack, types_stack):
+def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter):
     operator = operators_stack.pop()
     # Get right operator and its type
     right_operand = operands_stack.pop()
@@ -43,24 +43,27 @@ def create_GOTOF_quad(operands_stack, types_stack):
                 print("Error, type mismatch, expression is not boolean")
                 exit(1)
 
-# Create GOTO quad
-def create_GOTO_quad(types_stack):
-        expression_type = types_stack.pop()
 
-        # Check if expression type is boolean
-        if(expression_type == 2):
-                q = define_quad(Operations.GOTO.value, -1, -1, -1)
-                return q
-        else:
-                print("Error, type mismatch, expression is not boolean")
-                exit(1)
+# Create GOTO quad
+def create_GOTO_quad():
+        q = define_quad(Operations.GOTO.value, -1, -1, -1)
+        return q
+
+        # expression_type = types_stack.pop()
+
+        # # Check if expression type is boolean
+        # if(expression_type == 2):
+        #         q = define_quad(Operations.GOTO.value, -1, -1, -1)
+        #         return q
+        # else:
+        #         print("Error, type mismatch, expression is not boolean")
+        #         exit(1)
 
 # Creates quadruple for assignments
 def assignment_quad(operators_stack, operands_stack, types_stack):
         operator = operators_stack.pop()
         operand = operands_stack.pop()
         operand_type = types_stack.pop()
-        
         result = operands_stack.pop()
         result_type = types_stack.pop()
         
@@ -82,8 +85,8 @@ def one_operation_quad(operators_stack, operands_stack):
         return quad
 
 # Check fill function
-def fill(quadruples_list, end, temp_counter):
-        quadruples_list[end]['result'] = temp_counter
+def fill(quadruples_list, end, quad_counter):
+        quadruples_list[end]['result'] = quad_counter
 
 def print_quads(quadruples_list):
     counter = 0
