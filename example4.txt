@@ -1,5 +1,0 @@
-double x;
-
-Main {
-   x = 3;
-}

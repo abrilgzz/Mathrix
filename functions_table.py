@@ -23,37 +23,148 @@ class FunctionsTable:
             exit(1)
         else:
             return self._functions[function_id]
-    
-    def find_variable(self, var_id):
-        for f in self._functions:
-            if var_id in self._functions[f].variables_directory:
-                return self._functions[f].variables_directory[var_id].var_type
-       # Variable is not found 
-        print("Undefined variable")
-        exit(1)
 
-    def find_var_address(self, var_id):
-        for f in self._functions:
-            if var_id in self._functions[f].variables_directory:
-                return self._functions[f].variables_directory[var_id].var_address
-       # Variable is not found 
-        print("Undefined variable")
-        exit(1)
-
-    # Add variable
-    def add_variable(self, item, current_function):
-        variables_directory = self._functions[current_function.function_id].variables_directory.items()
-
-        if item.var_id in variables_directory:
-            print("Error, variable {} already exists".format(item.var_id))
+    def function_exists(self, function_id):
+        if function_id not in self._functions:
+            print("Undefined function")
             exit(1)
         else:
-            f = self._functions[current_function.function_id]
-            f.declare_variable(item.var_id, item.var_type, item.var_address)
+            return True
+
+    
+    def find_variable(self, var_id, function_id):
+        # print("function id at find_variable: ", function_id)
+        print("var_id: ", var_id, "function_id: ", function_id)
+
+        if (function_id != "Mathrix"):
+            # Check if it is a  local variable
+            variables_directory = self._functions[function_id].variables_directory
+
+            if var_id in variables_directory:
+                return variables_directory[var_id].var_type
+            else:
+                # Check if it is a global variable
+                variables_directory = self._functions["Mathrix"].variables_directory
+                
+                if var_id in variables_directory:
+                    return variables_directory[var_id].var_type
+                else:
+                    # Variable is not found 
+                    print("Undefined variable here: ", var_id)
+                    exit(1)
+        else:
+            variables_directory = self._functions["Mathrix"].variables_directory
+            if var_id in variables_directory:
+                return variables_directory[var_id].var_type
+            else:
+                # Variable is not found 
+                print("Undefined variable: ", var_id)
+                exit(1)
+
+    #     # Check if it is a local variable
+    #     for f in self._functions:
+    #         if var_id in self._functions[f].variables_directory:
+    #             return self._functions[f].variables_directory[var_id].var_type
+    #    # Variable is not found 
+    #     print("Undefined variable")
+    #     exit(1)
+
+    def find_var_address(self, var_id, function_id):
+        # Check if it is a  local variable
+        if (function_id != "Mathrix"):
+            variables_directory = self._functions[function_id].variables_directory
+            # print("function_id", function_id)
+            # print("var_id", var_id)
+
+            if var_id in variables_directory:
+                return variables_directory[var_id].var_address
+            else:
+                # Check if it is a global variable
+                variables_directory = self._functions["Mathrix"].variables_directory
+            
+                if var_id in variables_directory:
+                    return variables_directory[var_id].var_address
+                else:
+                    # Variable is not found 
+                    print("Undefined variable aqui: ", var_id)
+                    exit(1)
+        else:
+            variables_directory = self._functions["Mathrix"].variables_directory
+            if var_id in variables_directory:
+                return variables_directory[var_id].var_address
+            else:
+                # Variable is not found 
+                print("Variable not found: ", var_id)
+                exit(1)
+
+    #     for f in self._functions:
+    #         if var_id in self._functions[f].variables_directory:
+    #             return self._functions[f].variables_directory[var_id].var_address
+    #    # Variable is not found 
+    #     print("Undefined variable find_var_Address")
+    #     exit(1)
+
+    # Add variable
+    def add_variable(self, item, current_function, memory):
+        # print("var to add var_id: ", item.var_id)
+        # print("to function_id: ", current_function.function_id)
+
+        if (current_function.function_id == "Mathrix"):
+            # Add global variable
+            variables_directory = self._functions["Mathrix"].variables_directory.items()
+
+            if item.var_id in variables_directory:
+                print("Error, variable {} already exists".format(item.var_id))
+                exit(1)
+            else:
+                item.var_address = memory.set_address(item, current_function.function_id)
+                f = self._functions[current_function.function_id]
+                f.declare_variable(item.var_id, item.var_type, item.var_address)
+                print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
+                # print(self._functions[current_function.function_id].variables_directory.items())
+        else:
+            variables_directory = self._functions[current_function.function_id].variables_directory.items()
+
+            if item.var_id in variables_directory:
+                print("Error, variable {} already exists".format(item.var_id))
+                exit(1)
+            else:
+                item.var_address = memory.set_address(item, current_function.function_id)
+                f = self._functions[current_function.function_id]
+                f.declare_variable(item.var_id, item.var_type, item.var_address)
+                print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
+                # print(self._functions[current_function.function_id].variables_directory.items())
+
+        
+        # variables_directory = self._functions[current_function.function_id].variables_directory.items()
+
+        # if item.var_id in variables_directory:
+        #     print("Error, variable {} already exists".format(item.var_id))
+        #     exit(1)
+        # else:
+        #     f = self._functions[current_function.function_id]
+        #     f.declare_variable(item.var_id, item.var_type, item.var_address)
             # self._functions[current_function.function_id].variables_directory[item.var_id] = item.var_type
             # print("Variable added")
             # print(self._functions[current_function.function_id].variables_directory.items())
     
+    def find_constant(self, item):
+        variables_directory = self._functions["Mathrix"].variables_directory
+
+        if item.var_id in variables_directory:
+            return True
+        else:
+            return False
+
+    def add_constant(self, item):
+        #print("Var_id: ", item.var_id)
+        #print(self._functions["Mathrix"].variables_directory.items())
+
+        f  = self._functions["Mathrix"]
+        f.declare_variable(item.var_id, item.var_type, item.var_address)
+        #print("Constant added: ", item.var_id)
+
+
     # Add parameter
     def add_param(self, item, current_function):
         self._functions[current_function.function_id].params_list.append(item.var_type)

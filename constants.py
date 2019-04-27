@@ -36,8 +36,8 @@ class Operations(IntEnum):
     GOSUB = 23
     ERA = 24
     ENDPROC = 25
+    END = 26
     
-
     
 class Errors(IntEnum):
     MISMATCH = -1

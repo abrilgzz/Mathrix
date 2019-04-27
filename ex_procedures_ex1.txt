@@ -1,0 +1,33 @@
+int a;
+int b;
+double f;
+
+function void uno(int a){
+   a = a + b * a;
+   write(a);
+   write(b);
+   write(a+b);
+}
+
+function void dos(int a, int b, double g){
+   int i;
+   i = b;
+   while(i > 0){
+      a = a + b * i + b;
+      uno(i*2);
+      write(a);
+      i = i - 1;
+   }
+}
+
+Main{
+   a = 3;
+   b = a + 1;
+   write(a);
+   write(b);
+   f = 3.14;
+   dos(a+b*2, b, f*3);
+   write(a);
+   write(b);
+   write(f*2+1);
+}

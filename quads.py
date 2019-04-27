@@ -3,11 +3,17 @@ from constants import Types
 from constants import Operations
 from constants import Errors
 
+from functions_table import Function
+from functions_table import Variable
+from functions_table import FunctionsTable
+
+from memory import Memory
+
 def define_quad(operator, left_operand, right_operand, result):
     quad = {'operator' : operator, 'left_operand' : left_operand, 'right_operand' : right_operand, 'result' : result}
     return quad
 
-def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter):
+def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory):
     operator = operators_stack.pop()
     # Get right operator and its type
     right_operand = operands_stack.pop()
@@ -24,10 +30,13 @@ def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp
     else:
         # Create temporary registry 
         temp = "t" + str(temp_counter)
+        temp_var = Variable(temp, result_type, -1)
+        temp_var.var_address = memory.set_temp_address(temp_var)
+        
         # Push operands and types obtained to stacks
-        operands_stack.append(temp)
+        operands_stack.append(temp_var.var_address)
         types_stack.append(result_type)
-        quad = define_quad(operator, left_operand, right_operand, temp)
+        quad = define_quad(operator, left_operand, right_operand, temp_var.var_address)
         return quad
 
 # Create GOTOF quad
@@ -89,7 +98,7 @@ def fill(quadruples_list, end, quad_counter):
         quadruples_list[end]['result'] = quad_counter
 
 def print_quads(quadruples_list):
-    counter = 0
+    counter = 1
     print("Quadruples: ")
     for q in quadruples_list:
             print("q", counter, ": ", q)
