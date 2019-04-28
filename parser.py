@@ -26,6 +26,9 @@ from memory import Memory
 
 from quads import *
 
+# Maybe change name?
+from vm import *
+
 functions_directory = FunctionsTable()
 memory = Memory()
 
@@ -661,7 +664,7 @@ def p_sem_check_param(p):
 
         if(argument_type == current_param_type):
             # Generate PARAM quad
-            q = define_quad(Operations.PARAM.value, argument, -1, "param #" + str(parameter_counter))
+            q = define_quad(Operations.PARAM.value, current_param_type, -1, "param #" + str(parameter_counter))
             quadruples_list.append(q)
             quad_counter+=1
             parameter_counter+=1
@@ -763,7 +766,6 @@ def p_sem_end_main(p):
     quadruples_list.append(q)
     quad_counter+=1
 
-
     function_stack.clear()
 
 
@@ -785,6 +787,9 @@ if __name__ == '__main__':
             #print("# of quads: ", len(quadruples_list))
             print("Functions directory: ")
             functions_directory.print_table()
+
+            # Run virtual machine
+            #process_quads(quadruples_list)
 
         except EOFError:
             print(EOFError)

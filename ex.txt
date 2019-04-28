@@ -1,0 +1,5 @@
+double a;
+double b;
+Main {
+    b = a + 2;
+}

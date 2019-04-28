@@ -19,7 +19,7 @@ class Memory:
         self.temp_double = 44000
         self.temp_bool = 45000
 
-        # # Constant variable addresses
+        # Constant variable addresses
         self.cte_int = 20000
         self.cte_double = 21000
         self.cte_bool = 22000
@@ -41,12 +41,6 @@ class Memory:
         self.cte_double_counter = 0
         self.cte_bool_counter = 0
     
-    # # Check if constant already exists
-    # def check_cte_address(self, variable):
-    #     if constant exists:
-    #         return existing address
-    #     else:
-    #         return set_cte_address(variable)
 
     def set_cte_address(self, variable):
         # Assign address for int var
