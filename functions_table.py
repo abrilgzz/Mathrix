@@ -41,13 +41,13 @@ class FunctionsTable:
             variables_directory = self._functions[function_id].variables_directory
 
             if var_id in variables_directory:
-                return variables_directory[var_id].var_type
+                return variables_directory[var_id]
             else:
                 # Check if it is a global variable
                 variables_directory = self._functions["Mathrix"].variables_directory
                 
                 if var_id in variables_directory:
-                    return variables_directory[var_id].var_type
+                    return variables_directory[var_id]
                 else:
                     # Variable is not found 
                     print("Undefined variable 1: ", var_id)
@@ -55,7 +55,7 @@ class FunctionsTable:
         else:
             variables_directory = self._functions["Mathrix"].variables_directory
             if var_id in variables_directory:
-                return variables_directory[var_id].var_type
+                return variables_directory[var_id]
             else:
                 # Variable is not found 
                 print("Undefined variable 2: ", var_id)
@@ -97,12 +97,6 @@ class FunctionsTable:
                 print("Variable not found 4: ", var_id)
                 exit(1)
 
-    #     for f in self._functions:
-    #         if var_id in self._functions[f].variables_directory:
-    #             return self._functions[f].variables_directory[var_id].var_address
-    #    # Variable is not found 
-    #     print("Undefined variable find_var_Address")
-    #     exit(1)
 
     # Add variable
     def add_variable(self, item, current_function, memory):
@@ -111,7 +105,6 @@ class FunctionsTable:
         if (current_function.function_id == "Mathrix"):
             # Add global variable
             variables_directory = self._functions["Mathrix"].variables_directory.items()
-
             
             if item.var_id in variables_directory:
                 print("Error, variable {} already exists".format(item.var_id))

@@ -98,7 +98,7 @@ def fill(quadruples_list, end, quad_counter):
         quadruples_list[end]['result'] = quad_counter
 
 def print_quads(quadruples_list):
-    counter = 1
+    counter = 0
     print("Quadruples: ")
     for q in quadruples_list:
             print("q", counter, ": ", q)

@@ -42,7 +42,7 @@ types_stack = []
 jumps_stack = []
 
 quadruples_list = []
-quad_counter = 1
+quad_counter = 0
 temp_counter = 0
 
 parameter_counter = 0
@@ -118,17 +118,16 @@ def p_func_type(p):
     '''
 
 def p_block(p):
-    '''block : LEFT_BRACE statement RIGHT_BRACE
+    '''block : LEFT_BRACE var_declaration statements RIGHT_BRACE
     '''
-def p_statement(p):
-    '''statement : statement statement_1
+
+def p_statements(p):
+    '''statements : statement statements
     | empty
     '''
 
-# function_call example: x = function1() + function2();
-def p_statement_1(p):
-    '''statement_1 : var_declaration
-    | assignment
+def p_statement(p):
+    '''statement : assignment
     | condition
     | return
     | function_call  
@@ -195,7 +194,6 @@ def p_factor(p):
 
 def p_condition(p):
     '''condition : IF LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block condition_1 sem_fill_gotof
-
     '''
 
 def p_condition_1(p):
@@ -357,15 +355,16 @@ def p_sem_push_operand(p):
     '''
     operand = p[-1]
     # Check if variable/operand is declared and get its type
-    variable_type = functions_directory.find_variable(operand, current_function.function_id)
+    variable = functions_directory.find_variable(operand, current_function.function_id)
+    var_type = variable.var_type
 
     # Add variable's memory address to the operands stack
     var_memory_address = functions_directory.find_var_address(operand, current_function.function_id)
     operands_stack.append(var_memory_address)
 
     # print(operand, " was pushed to operands stack")
-    types_stack.append(variable_type)
-    # print(variable_type, " was pushed to types stack")
+    types_stack.append(var_type)
+    # print(var_type, " was pushed to types stack")
 
 def p_sem_push_constant_int(p):
     '''sem_push_constant_int : empty
@@ -385,7 +384,6 @@ def p_sem_push_constant_int(p):
         constant_int_var.var_address = memory.set_cte_address(constant_int_var)
         functions_directory.add_constant(constant_int_var)
         
-
     operands_stack.append(constant_int_var.var_address)
 
 
@@ -398,7 +396,14 @@ def p_sem_push_constant_double(p):
 
     constant_double = "#" + str(constant)
     constant_double_var = Variable(constant_double, Types.DOUBLE.value, -1)
-    constant_double_var.var_address = memory.set_cte_address(constant_double_var)
+
+    if functions_directory.find_constant(constant_double_var):
+        # print("Constant ", constant_double_var.var_id, " was found again")
+        constant_double_var.var_address = functions_directory.find_var_address(constant_double_var.var_id, "Mathrix")
+    else:
+        # Add constants to global variables
+        constant_double_var.var_address = memory.set_cte_address(constant_double_var)
+        functions_directory.add_constant(constant_double_var)
 
     operands_stack.append(constant_double_var.var_address)
 
@@ -519,14 +524,14 @@ def p_sem_top_relational(p):
 def p_sem_end_condition(p):
     '''sem_end_condition : empty
     '''
-    global quad_counter
+    global quad_counter, operands_stack, types_stack
 
     if (operands_stack[-1:]):
         q = create_GOTOF_quad(operands_stack, types_stack)
         quadruples_list.append(q)
         quad_counter+=1
         jumps_stack.append(quad_counter-1)
-        
+        # print("jumps_stack: ", jumps_stack)
 
 def p_sem_fill_gotof(p):
     '''sem_fill_gotof : empty
@@ -680,7 +685,7 @@ def p_sem_count_params(p):
 def p_sem_gosub(p):
     '''sem_gosub : empty
     '''
-    global quad_counter, current_function, function_called, function_stack, memory
+    global quad_counter, current_function, function_called, function_stack, memory, temp_counter, operands_stack
 
      
     # Generate GOSUB quad
@@ -692,13 +697,20 @@ def p_sem_gosub(p):
     # print("function called type: ", function_called.function_type )
 
     # If function is not void
+
     if(function_called.function_type != Types.VOID.value):
         # Assign result of return value to a temp var
-        temp_var = Variable(function_called.function_id, function_called.function_type, -1)
-        functions_directory.add_variable(temp_var, current_function, memory)
+        temp = "t" + str(temp_counter)
+        temp_var = Variable(temp, function_called.function_type, -1)
+        temp_var.var_address = memory.set_temp_address(temp_var)
+        
+        operands_stack.append(temp_var.var_address)
+        # Store this temporal var in the global var return for this function
+        return_var = functions_directory.find_variable(function_called.function_id, "Mathrix")
+        #print("return_var: ", return_var)
 
         # Create assignment quad
-        q2 = define_quad(Operations.ASSIGN.value, temp_var.var_address, -1, temp_var.var_address)
+        q2 = define_quad(Operations.ASSIGN.value, return_var.var_address, -1, temp_var.var_address)
         quadruples_list.append(q2)
         quad_counter+=1
 
@@ -718,6 +730,11 @@ def p_sem_start_program(p):
     current_function = functions_directory._functions['Mathrix']
     current_type = Types.VOID.value
 
+    # Starting quad
+    q = define_quad (-1, -1, -1, -1)
+    quadruples_list.append(q)
+    quad_counter+=1
+
     # Generate FIRST quad (GOTO)
     q = define_quad(Operations.GOTO.value, -1, -1, -1) 
     quadruples_list.append(q)
@@ -733,7 +750,7 @@ def p_sem_fill_goto_main(p):
     current_function = functions_directory._functions['Mathrix']
     current_type = Types.VOID.value
 
-    quadruples_list[0]['result'] = quad_counter
+    quadruples_list[1]['result'] = quad_counter
 
 
 def p_sem_end_main(p):
@@ -765,7 +782,7 @@ if __name__ == '__main__':
             parser_Mathrix.parse(data)
             print_quads(quadruples_list)
             #print("quad_counter: ", quad_counter)
-            print("# of quads: ", len(quadruples_list))
+            #print("# of quads: ", len(quadruples_list))
             print("Functions directory: ")
             functions_directory.print_table()
 
