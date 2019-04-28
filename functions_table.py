@@ -106,12 +106,13 @@ class FunctionsTable:
 
     # Add variable
     def add_variable(self, item, current_function, memory):
-        print("var to add var_id: ", item.var_id, "to function_id: ", current_function.function_id)
+        # print("var to add var_id: ", item.var_id, "to function_id: ", current_function.function_id)
 
         if (current_function.function_id == "Mathrix"):
             # Add global variable
             variables_directory = self._functions["Mathrix"].variables_directory.items()
 
+            
             if item.var_id in variables_directory:
                 print("Error, variable {} already exists".format(item.var_id))
                 exit(1)
