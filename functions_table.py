@@ -34,7 +34,7 @@ class FunctionsTable:
     
     def find_variable(self, var_id, function_id):
         # print("function id at find_variable: ", function_id)
-        print("var_id: ", var_id, "function_id: ", function_id)
+        # print("var_id: ", var_id, "function_id: ", function_id)
 
         if (function_id != "Mathrix"):
             # Check if it is a  local variable
@@ -50,7 +50,7 @@ class FunctionsTable:
                     return variables_directory[var_id].var_type
                 else:
                     # Variable is not found 
-                    print("Undefined variable here: ", var_id)
+                    print("Undefined variable 1: ", var_id)
                     exit(1)
         else:
             variables_directory = self._functions["Mathrix"].variables_directory
@@ -58,7 +58,7 @@ class FunctionsTable:
                 return variables_directory[var_id].var_type
             else:
                 # Variable is not found 
-                print("Undefined variable: ", var_id)
+                print("Undefined variable 2: ", var_id)
                 exit(1)
 
     #     # Check if it is a local variable
@@ -86,7 +86,7 @@ class FunctionsTable:
                     return variables_directory[var_id].var_address
                 else:
                     # Variable is not found 
-                    print("Undefined variable aqui: ", var_id)
+                    print("Undefined variable 3: ", var_id)
                     exit(1)
         else:
             variables_directory = self._functions["Mathrix"].variables_directory
@@ -94,7 +94,7 @@ class FunctionsTable:
                 return variables_directory[var_id].var_address
             else:
                 # Variable is not found 
-                print("Variable not found: ", var_id)
+                print("Variable not found 4: ", var_id)
                 exit(1)
 
     #     for f in self._functions:
@@ -106,8 +106,7 @@ class FunctionsTable:
 
     # Add variable
     def add_variable(self, item, current_function, memory):
-        # print("var to add var_id: ", item.var_id)
-        # print("to function_id: ", current_function.function_id)
+        print("var to add var_id: ", item.var_id, "to function_id: ", current_function.function_id)
 
         if (current_function.function_id == "Mathrix"):
             # Add global variable
@@ -120,7 +119,7 @@ class FunctionsTable:
                 item.var_address = memory.set_address(item, current_function.function_id)
                 f = self._functions[current_function.function_id]
                 f.declare_variable(item.var_id, item.var_type, item.var_address)
-                print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
+                # print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
                 # print(self._functions[current_function.function_id].variables_directory.items())
         else:
             variables_directory = self._functions[current_function.function_id].variables_directory.items()
@@ -132,7 +131,7 @@ class FunctionsTable:
                 item.var_address = memory.set_address(item, current_function.function_id)
                 f = self._functions[current_function.function_id]
                 f.declare_variable(item.var_id, item.var_type, item.var_address)
-                print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
+                # print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
                 # print(self._functions[current_function.function_id].variables_directory.items())
 
         

@@ -121,7 +121,16 @@ class Memory:
                 return address
 
     # Reset local variable addresses after done reading function
-    #def clear_local_addresses(self, function_id):
+    def clear_local_temp_addresses(self):
+        self.local_int_counter = 0
+        self.local_double_counter = 0
+        self.local_bool_counter = 0
+
+        self.temp_int_counter = 0
+        self.temp_double_counter = 0
+        self.temp_bool_counter = 0
+
+
 
     
 
