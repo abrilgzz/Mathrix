@@ -1,5 +1,5 @@
-double a;
-double b;
+int a;
+int b;
 Main {
     b = a + 2;
 }

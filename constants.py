@@ -37,6 +37,7 @@ class Operations(IntEnum):
     ERA = 24
     ENDPROC = 25
     END = 26
+    GLOBALERA = 27
     
     
 class Errors(IntEnum):

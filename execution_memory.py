@@ -29,19 +29,19 @@ class ExecutionMemory(object):
 
         self.memory['global']['var'] = {}
         self.memory['global']['temp'] = {}
-        self.memory['global']['cte'] = {}
+        self.memory['global']['cte'] = {}  
 
-        self.memory['global']['var']['int'] = []
-        self.memory['global']['var']['double'] = []
-        self.memory['global']['var']['bool'] = []
+        self.memory['global']['var']['int'] = {}
+        self.memory['global']['var']['double'] = {}
+        self.memory['global']['var']['bool'] = {}
 
-        self.memory['global']['temp']['int'] = []
-        self.memory['global']['temp']['double'] = []
-        self.memory['global']['temp']['bool'] = []
+        self.memory['global']['temp']['int'] = {}
+        self.memory['global']['temp']['double'] = {}
+        self.memory['global']['temp']['bool'] = {}
 
-        self.memory['global']['cte']['int'] = []
-        self.memory['global']['cte']['double'] = []
-        self.memory['global']['cte']['bool'] = []
+        self.memory['global']['cte']['int'] = {}
+        self.memory['global']['cte']['double'] = {}
+        self.memory['global']['cte']['bool'] = {}
 
 
         self.memory['local'] = {}
@@ -52,6 +52,8 @@ class ExecutionMemory(object):
         self.mem_temp = {}
 
     def get_variable_value(self, address, current_function):
+        # print("address: ", address)
+        # print("current_function: ", current_function)
         # Opcion1
         # Check if it is a global variable
         if (5000 <= address <= 8999):
@@ -74,10 +76,13 @@ class ExecutionMemory(object):
             if (20000 <= address <= 22999):
                 if(20000 <= address <= 20999):
                     return self.memory['global']['cte']['int'][address]
+                    # return self.convert_constant(self.memory['global']['cte']['int'][address])
                 elif(21000 <= address <= 21999):
                     return self.memory['global']['cte']['double'][address]
+                    # return self.convert_constant(self.memory['global']['cte']['double'][address])
                 elif(22000 <= address <= 22999):
-                    return self.memory['global']['cte']['bool'][address]
+                    self.memory['global']['cte']['bool'][address]
+                    # return self.convert_constant(self.memory['global']['cte']['bool'][address])
             else:
                 print("Invalid address")
                 exit(1)
@@ -92,10 +97,15 @@ class ExecutionMemory(object):
                 elif(45000 <= address <= 45999):
                     return self.memory['local']['temp']['bool'][address]
 
+
     def write_to_memory(self, address, result, current_function):
+        # print("address: ", address)
+        # print("memory: ", self.memory)
+        # print("current_function: ", current_function)
         # Check if it is a global variable
         if (5000 <= address <= 8999):
                 if(5000 <= address <= 5999):
+                    #print("hii, ", self.memory['global']['var']['int'])
                     self.memory['global']['var']['int'][address] = result
                 elif(6000 <= address <= 6999):
                     self.memory['global']['var']['double'][address] = result
@@ -111,7 +121,7 @@ class ExecutionMemory(object):
                 elif(45000 <= address <= 45999):
                     self.memory['global']['temp']['bool'][address] = result
             # Check if it is a constant
-            if (20000 <= address <= 22999):
+            elif (20000 <= address <= 22999):
                 if(20000 <= address <= 20999):
                     self.memory['global']['cte']['int'][address] = result
                 elif(21000 <= address <= 21999):
@@ -142,6 +152,54 @@ class ExecutionMemory(object):
     def end_program(self):
         self.memory.clear()
     
+
     def start_local_memory(self, quad):
         return True
         # TO-DO
+
+    def start_global_memory(self, vars_directory):
+        # Initialize spaces in memory global vars:
+        for v in vars_directory:
+            variable = vars_directory[v]
+            print("adding ", variable, " to memory")
+            # Global variables
+            if(5000 <= variable.var_address <= 8999):
+                if(variable.var_type == Types.INT.value):
+                    #self.memory['global']['var']['int'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+                if(variable.var_type == Types.DOUBLE.value):
+                    #self.memory['global']['var']['double'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+                if(variable.var_type == Types.BOOL.value):
+                    #self.memory['global']['var']['bool'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+            # Constant variables
+            elif (20000 <= variable.var_address <= 22999):
+                if(variable.var_type == Types.INT.value):
+                    #self.memory['global']['cte']['int'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+                if(variable.var_type == Types.DOUBLE.value):
+                    #self.memory['global']['cte']['double'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+                if(variable.var_type == Types.BOOL.value):
+                    #self.memory['global']['cte']['bool'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+            # Temp variables
+            elif (43000 <= variable.var_address <= 45999):
+                if(variable.var_type == Types.INT.value):
+                    #self.memory['global']['temp']['int'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+                if(variable.var_type == Types.DOUBLE.value):
+                    #self.memory['global']['temp']['double'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+                if(variable.var_type == Types.BOOL.value):
+                    #self.memory['global']['temp']['bool'].append(0)
+                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+            
+
+    # TO-DO: Get constant values
+    def convert_constant(self, value):
+        return -3333
+
+    
+    # TO-DO: Parse to integer/double

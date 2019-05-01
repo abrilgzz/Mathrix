@@ -12,9 +12,17 @@ current_function = "Mathrix"
 
 
 
-def run():
+
+def run(functions_directory, quadruples_list):
+    # Generate ERA for global function
+    print("global var dict: ", functions_directory._functions['Mathrix'].variables_directory)
+    em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
+
     # Add global function to function stack
     function_stack.append("Mathrix")
+    
+    # Process quadruples list
+    process_quads(quadruples_list)
 
 # def print_result(result):
 #     print("result: ", result)
@@ -22,10 +30,12 @@ def run():
 def process_quads(quadruples_list):
     global instruction_pointer, current_function, function_counter
 
+
     while(instruction_pointer < len(quadruples_list)):
         current_quad = quadruples_list[instruction_pointer]
 
-        print("current_quad: ", current_quad)
+        # print("current_quad: ", current_quad)
+        # print("memory: ", em.memory)
 
         # Determine operations
         if(current_quad['operator'] == Operations.PLUS.value):
@@ -157,15 +167,19 @@ def process_quads(quadruples_list):
             #TO-DO
             em.start_local_memory(current_quad)
             function_counter+=1
+        # elif(current_quad['operator'] == Operations.GLOBALERA.value):
+        #     #TO-DO
+        #     em.start_global_memory(current_quad)
+        #     function_counter+=1
         elif(current_quad['operator'] == Operations.ENDPROC.value):
             instruction_pointer = instruction_pointer_stack.pop()
             em.clear_memory(current_function)
             current_function = function_stack.pop()
         elif(current_quad['operator'] == Operations.END.value):
+            print("final memory looks like this: ", em.memory)
             em.end_program()
             print("Goodbye!")
             exit(1)
         else:
             pass
     
-    print(em.memory)

@@ -266,7 +266,7 @@ def p_sem_add_func(p):
     global current_function, quad_counter
     function_id = p[-1]
     
-    f = Function(function_id, current_type, {}, [], quad_counter)
+    f = Function(function_id, current_type, {}, [], quad_counter, 0)
     functions_directory.add_function(f)
     current_function = f
     #print(functions_directory)
@@ -275,7 +275,16 @@ def p_sem_end_func(p):
     '''sem_end_func : empty
     '''
     global functions_directory, quad_counter, memory, temp_counter, function_stack
+    # print("Vars table for ", current_function.function_id, " at the end of the f.")
+    # print("vars counter: ", len(current_function.variables_directory))
     # print("temp_counter: ", temp_counter)
+    # print(functions_directory._functions[current_function.function_id].variables_directory)
+
+    local_vars = len(current_function.variables_directory)
+    function_size = local_vars + temp_counter
+    
+    current_function.size = function_size
+
     # Release the current variables table
     functions_directory._functions[current_function.function_id].variables_directory.clear()
     
@@ -616,20 +625,15 @@ def p_sem_create_era(p):
     global quad_counter, current_function, parameter_counter, previous_function, function_called
     # Start the parameter counter in 0
     parameter_counter = 0
-    # Get how many parameters of each type the function has
-    local_ints = current_function.params_list.count(Types.INT.value)
-    local_doubles = current_function.params_list.count(Types.DOUBLE.value)
-    local_bools = current_function.params_list.count(Types.BOOL.value)
-    # print("ints: ", local_ints, " doubles: ", local_doubles, " bools: ", local_bools)
-
-    # Generate action ERA size
-
+   
+ 
+    # Get the size of the function
     function_called = current_function
-    #Create quad
-    q = define_quad(Operations.ERA.value, function_called.function_id, -1, -1) 
+
+    #Create quad and store the size of the function
+    q = define_quad(Operations.ERA.value, function_called.function_id, -1, function_called.size) 
     quadruples_list.append(q)
     quad_counter+=1
-
 
     # Return to previous function in order to check local variables
     current_function = previous_function
@@ -704,6 +708,7 @@ def p_sem_gosub(p):
     if(function_called.function_type != Types.VOID.value):
         # Assign result of return value to a temp var
         temp = "t" + str(temp_counter)
+        temp_counter+=1
         temp_var = Variable(temp, function_called.function_type, -1)
         temp_var.var_address = memory.set_temp_address(temp_var)
         
@@ -727,14 +732,14 @@ def p_sem_start_program(p):
     '''
     global functions_directory, current_function, current_type, quad_counter
     
-    Mathrix = Function('Mathrix', Types.VOID.value, {}, [], 0)
+    Mathrix = Function('Mathrix', Types.VOID.value, {}, [], 0, 0)
     functions_directory._functions['Mathrix'] = Mathrix
 
     current_function = functions_directory._functions['Mathrix']
     current_type = Types.VOID.value
 
     # Starting quad
-    q = define_quad (-1, -1, -1, -1)
+    q = define_quad (Operations.GLOBALERA.value, -1, -1, -1)
     quadruples_list.append(q)
     quad_counter+=1
 
@@ -759,7 +764,14 @@ def p_sem_fill_goto_main(p):
 def p_sem_end_main(p):
     '''sem_end_main : empty
     '''
-    global quad_counter
+    global quad_counter, temp_counter
+
+    local_vars = len(current_function.variables_directory)
+    function_size = local_vars + temp_counter
+    
+    current_function.size = function_size
+    # Fill quad 0 with final main size
+    quadruples_list[0]['result'] = current_function.size
 
     #Generate LAST quad (END)
     q = define_quad(Operations.END.value, -1, -1, -1) 
@@ -789,7 +801,9 @@ if __name__ == '__main__':
             functions_directory.print_table()
 
             # Run virtual machine
-            #process_quads(quadruples_list)
+            run(functions_directory, quadruples_list)
+
+            # process_quads(quadruples_list)
 
         except EOFError:
             print(EOFError)
