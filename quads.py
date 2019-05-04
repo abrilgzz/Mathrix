@@ -13,7 +13,7 @@ def define_quad(operator, left_operand, right_operand, result):
     quad = {'operator' : operator, 'left_operand' : left_operand, 'right_operand' : right_operand, 'result' : result}
     return quad
 
-def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory):
+def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables):
     operator = operators_stack.pop()
     # Get right operator and its type
     right_operand = operands_stack.pop()
@@ -32,6 +32,10 @@ def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp
         temp = "t" + str(temp_counter)
         temp_var = Variable(temp, result_type, -1)
         temp_var.var_address = memory.set_temp_address(temp_var)
+        
+        # Add to temporal vars dict
+        if(current_function.function_id != 'Mathrix'):
+                temporal_variables[current_function.function_id][temp_var.var_type] += 1
         
         # Push operands and types obtained to stacks
         operands_stack.append(temp_var.var_address)

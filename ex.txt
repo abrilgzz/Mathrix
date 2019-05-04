@@ -1,5 +1,6 @@
 int a;
-int b;
+double b;
 Main {
-    b = a + 2;
+    a = 3;
+    b = a - -3;
 }
