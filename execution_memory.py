@@ -85,7 +85,7 @@ class ExecutionMemory(object):
             
             if (9000 <= address <= 11999):
                 if(9000 <= address <= 9999):
-                    return self.memory['local'][current_function]['var']['int'][address]
+                    return int(self.memory['local'][current_function]['var']['int'][address])
                 elif(10000 <= address <= 10999):
                     return self.memory['local'][current_function]['var']['double'][address]
                 elif(11000 <= address <= 11999):
@@ -93,7 +93,7 @@ class ExecutionMemory(object):
             # Check if it is temp
             if (43000 <= address <= 45999):
                 if(43000 <= address <= 43999):
-                    return self.memory['local'][current_function]['temp']['int'][address]
+                    return int(self.memory['local'][current_function]['temp']['int'][address])
                 elif(44000 <= address <= 44999):
                     return self.memory['local'][current_function]['temp']['double'][address]
                 elif(45000 <= address <= 45999):

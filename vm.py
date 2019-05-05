@@ -18,7 +18,7 @@ def truncate(number, digits) -> float:
 
 def run(functions_directory, quadruples_list):
     # Generate ERA for global function
-    print("global var dict: ", functions_directory._functions['Mathrix'].variables_directory)
+    # print("global var dict: ", functions_directory._functions['Mathrix'].variables_directory)
     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
 
     # Add global function to function stack
@@ -27,8 +27,6 @@ def run(functions_directory, quadruples_list):
     # Process quadruples list
     process_quads(quadruples_list)
 
-# def print_result(result):
-#     print("result: ", result)
 
 def process_quads(quadruples_list):
     global instruction_pointer, current_function, function_counter
@@ -37,7 +35,7 @@ def process_quads(quadruples_list):
     while(instruction_pointer < len(quadruples_list)):
         current_quad = quadruples_list[instruction_pointer]
 
-        print("current_quad: ", current_quad)
+        # print("current_quad: ", current_quad)
         # print("memory: ", em.memory)
 
         # Determine operations
@@ -143,10 +141,9 @@ def process_quads(quadruples_list):
             em.write_to_memory(current_quad['result'], result, current_function)
             instruction_pointer+=1
         elif(current_quad['operator'] == Operations.WRITE.value):
-            result = em.get_variable_value(current_quad['left_operand'], current_function)
-            
+            result = em.get_variable_value(current_quad['result'], current_function)
             print(result)
-            #print_result(result)
+            #print(type(result))
             instruction_pointer+=1
         elif(current_quad['operator'] == Operations.RETURN.value):
             result = em.get_variable_value(current_quad['left_operand'], current_function)
@@ -193,17 +190,15 @@ def process_quads(quadruples_list):
 
             function_counter+=1
             instruction_pointer+=2
-        elif(current_quad['operator'] == Operations.GLOBALERA.value):
-            print("uuu")
-            #em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
-            
-
+        # elif(current_quad['operator'] == Operations.GLOBALERA.value):
+        #     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
+        
         elif(current_quad['operator'] == Operations.ENDPROC.value):
             instruction_pointer = instruction_pointer_stack.pop()
             em.clear_memory(current_function)
             current_function = function_stack.pop()
         elif(current_quad['operator'] == Operations.END.value):
-            print("final memory looks like this: ", em.memory)
+            # print("final memory looks like this: ", em.memory)
             em.end_program()
             print("Goodbye!")
             exit(1)
