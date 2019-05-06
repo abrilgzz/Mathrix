@@ -9,7 +9,7 @@ function_stack = []
 function_counter = 0
 
 em = ExecutionMemory()
-current_function = "Mathrix"
+current_function = 'Mathrix'
 
 
 def truncate(number, digits) -> float:
@@ -22,7 +22,7 @@ def run(functions_directory, quadruples_list):
     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
 
     # Add global function to function stack
-    function_stack.append("Mathrix")
+    function_stack.append('Mathrix')
     
     # Process quadruples list
     process_quads(quadruples_list)
@@ -36,7 +36,7 @@ def process_quads(quadruples_list):
         current_quad = quadruples_list[instruction_pointer]
 
         print("current_quad: ", current_quad)
-        # print("memory: ", em.memory)
+        print("memory: ", em.memory)
 
         # Determine operations
         if(current_quad['operator'] == Operations.PLUS.value):
@@ -148,7 +148,7 @@ def process_quads(quadruples_list):
         elif(current_quad['operator'] == Operations.RETURN.value):
             result = em.get_variable_value(current_quad['left_operand'], current_function)
             temp_func_storage = current_function
-            current_function = "Mathrix"
+            current_function = 'Mathrix'
             em.write_to_memory(current_quad['result'], result, current_function)
             current_function = temp_func_storage
             instruction_pointer+=1
@@ -192,7 +192,15 @@ def process_quads(quadruples_list):
             instruction_pointer+=2
         # elif(current_quad['operator'] == Operations.GLOBALERA.value):
         #     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
-        
+        # Matrices
+        elif(current_quad['operator'] == Operations.VER.value):
+            index = current_quad['left_operand']
+            lim_i = current_quad['right_operand']
+            lim_s = current_quad['result']
+
+            
+
+            instruction_pointer+=1
         elif(current_quad['operator'] == Operations.ENDPROC.value):
             instruction_pointer = instruction_pointer_stack.pop()
             em.clear_memory(current_function)

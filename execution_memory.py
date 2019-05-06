@@ -51,7 +51,9 @@ class ExecutionMemory(object):
     def get_variable_value(self, address, current_function):
         # print("address: ", address)
         # print("current_function: ", current_function)
-        
+        if self.is_address_reference(address):
+            address = self.dereference(address)
+
         # Check if it is a global variable
         if (5000 <= address <= 8999):
             if(5000 <= address <= 5999):
@@ -68,7 +70,7 @@ class ExecutionMemory(object):
                 return self.convert_constant(self.memory['global']['cte']['double'][address])
             elif(22000 <= address <= 22999):
                 return self.convert_constant(self.memory['global']['cte']['bool'][address])   
-        elif(current_function == "Mathrix"):
+        elif(current_function == 'Mathrix'):
             # Check if it is temp
             if (43000 <= address <= 45999):
                 if(43000 <= address <= 43999):
@@ -104,6 +106,13 @@ class ExecutionMemory(object):
         # print("address: ", address)
         # print("current_function: ", current_function)
         # print("memory: ", self.memory)
+
+        if self.is_address_reference(address):
+            address = self.dereference(address)
+        
+        # if self.is_address_reference(result):
+        #     result = self.dereference(result)
+
         # Check if it is a global variable
         if (5000 <= address <= 8999):
                 if(5000 <= address <= 5999):
@@ -120,7 +129,7 @@ class ExecutionMemory(object):
                     self.memory['global']['cte']['double'][address] = result
                 elif(22000 <= address <= 22999):
                     self.memory['global']['cte']['bool'][address] = result
-        elif(current_function == "Mathrix"):
+        elif(current_function == 'Mathrix'):
             # Check if it is temp
             if (43000 <= address <= 45999):
                 if(43000 <= address <= 43999):
@@ -173,16 +182,7 @@ class ExecutionMemory(object):
     def end_program(self):
         self.memory.clear()
     
-
     def start_local_memory(self, local_vars_quad, temp_vars_quad, function_counter):
-        # ints = int(local_vars_quad['left_operand'])
-        # doubles = int(local_vars_quad['right_operand'])
-        # bools = int(local_vars_quad['result'])
-
-        # temp_ints = temp_vars_quad['left_operand']
-        # temp_doubles = temp_vars_quad['right_operand']
-        # temp_bools = temp_vars_quad['result']
-
         self.memory['local'][str(function_counter)] = {}
 
         self.memory['local'][str(function_counter)]['var'] = {}
@@ -195,68 +195,74 @@ class ExecutionMemory(object):
         self.memory['local'][str(function_counter)]['temp']['double'] = {}
         self.memory['local'][str(function_counter)]['temp']['bool'] = {}
 
-        # # Declare spaces for local variables and local temps
-        # for v in range(0, ints):
-        #     self.memory['local'][str(function_counter)]['var']['int'].append(0)
-        
-        # for v in range(0, doubles):
-        #     self.memory['local'][str(function_counter)]['var']['double'].append(0)
-
-        # for v in range(0, bools):
-        #     self.memory['local'][str(function_counter)]['var']['bool'].append(0)
-
-        # for v in range(0, temp_ints):
-        #     self.memory['local'][str(function_counter)]['temp']['int'].append(0)
-        
-        # for v in range(0, temp_doubles):
-        #     self.memory['local'][str(function_counter)]['temp']['double'].append(0)
-        
-        # for v in range(0, temp_bools):
-        #     self.memory['local'][str(function_counter)]['temp']['bool'].append(0)
-
-
-
     def start_global_memory(self, vars_directory):
         # Initialize spaces in memory global vars:
         for v in vars_directory:
             variable = vars_directory[v]
             # print("adding ", variable, " to memory")
-            # Global variables
-            if(5000 <= variable.var_address <= 8999):
-                if(variable.var_type == Types.INT.value):
-                    #self.memory['global']['var']['int'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-                if(variable.var_type == Types.DOUBLE.value):
-                    #self.memory['global']['var']['double'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-                if(variable.var_type == Types.BOOL.value):
-                    #self.memory['global']['var']['bool'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-            # Constant variables
-            elif (20000 <= variable.var_address <= 22999):
-                if(variable.var_type == Types.INT.value):
-                    #self.memory['global']['cte']['int'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-                if(variable.var_type == Types.DOUBLE.value):
-                    #self.memory['global']['cte']['double'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-                if(variable.var_type == Types.BOOL.value):
-                    #self.memory['global']['cte']['bool'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-            # Temp variables
-            elif (43000 <= variable.var_address <= 45999):
-                if(variable.var_type == Types.INT.value):
-                    #self.memory['global']['temp']['int'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-                if(variable.var_type == Types.DOUBLE.value):
-                    #self.memory['global']['temp']['double'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
-                if(variable.var_type == Types.BOOL.value):
-                    #self.memory['global']['temp']['bool'].append(0)
-                    self.write_to_memory(variable.var_address, variable.var_id, "Mathrix")
+            if self.is_matrix(variable) and variable.var_type != Types.BOOL.value:
+                self.create_matrix(variable, 'Mathrix')
+            else:
+            # Atomic variables
+                # Global variables
+                if(5000 <= variable.var_address <= 8999):
+                    if(variable.var_type == Types.INT.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                    if(variable.var_type == Types.DOUBLE.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                    if(variable.var_type == Types.BOOL.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                # Constant variables
+                elif (20000 <= variable.var_address <= 22999):
+                    if(variable.var_type == Types.INT.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                    if(variable.var_type == Types.DOUBLE.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                    if(variable.var_type == Types.BOOL.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                # Temp variables
+                elif (43000 <= variable.var_address <= 45999):
+                    if(variable.var_type == Types.INT.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                    if(variable.var_type == Types.DOUBLE.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
+                    if(variable.var_type == Types.BOOL.value):
+                        self.write_to_memory(variable.var_address, variable.var_id, 'Mathrix')
             
+    
+    def is_matrix(self, variable):
+        if variable.var_dim1_dict != 0:
+            return True
+
+    def create_matrix(self, variable, current_function):
+        spaces_needed = self.calculate_m0(variable)
+        counter = 0
+
+        for x in range(0, spaces_needed):
+            self.write_to_memory(variable.var_address + counter, -1, current_function)
+            counter+=1
+
+    def calculate_m0(self, variable):
+        # Formulas for 2 dimensional arrays
+        r1 = 1 * (variable.var_dim1_dict.lim_s - 0 + 1)
+        m0 = r1 * (variable.var_dim2_dict.lim_s - 0 + 1)
+        return m0
+    
     def convert_constant(self, value):
         number = fast_real(value[1:])
         return number
+
+    def is_address_reference(self, value):
+        value = str(value)
+        if '(' in value:
+            #print("is reference")
+            return True
+
+    def dereference(self, address_ref):
+        address_ref = address_ref[:-1]
+        address_ref = address_ref[1:]
+        print("address_ref: ", address_ref)
+        return int(address_ref)
+
 
 

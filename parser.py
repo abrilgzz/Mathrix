@@ -922,14 +922,27 @@ def p_sem_ver_dim1(p):
     # Create dim1*m1 quad
     operators_stack.append(Operations.MULTIPLY.value)
     m1 = matrix_var.var_dim1_dict.k
-    operands_stack.append(m1)
+
+    # Register m1 as constant
     types_stack.append(Types.INT.value)
+    constant_int = "#" + str(m1)
+    constant_int_var = Variable(constant_int, Types.INT.value, -1, 0, 0)
+    if functions_directory.find_constant(constant_int_var):
+        # print("Constant ", constant_int_var.var_id, " was found again")
+        constant_int_var.var_address = functions_directory.find_var_address(constant_int_var.var_id, "Mathrix")
+    else:
+        # Add constants to global variables
+        constant_int_var.var_address = memory.set_cte_address(constant_int_var)
+        functions_directory.add_constant(constant_int_var) 
+    operands_stack.append(constant_int_var.var_address)
 
     q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
     quadruples_list.append(q)
     quad_counter+=1
     temp_counter+=1
 
+    # Pop false bottom from operators stack
+    operators_stack.pop()
 
 def p_sem_check_dim2(p):
     '''sem_check_dim2 : empty
@@ -1005,7 +1018,7 @@ if __name__ == '__main__':
             functions_directory.print_table()
 
             # Run virtual machine
-            # run(functions_directory, quadruples_list)
+            run(functions_directory, quadruples_list)
 
             # process_quads(quadruples_list)
 
