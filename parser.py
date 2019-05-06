@@ -12,15 +12,11 @@ import ply.yacc as yacc
 
 from scanner import tokens
 
-from constants import Types
-from constants import Operations
-from constants import Errors
+from constants import *
 
 from semantic_cube import SemanticCube
 
-from functions_table import Function
-from functions_table import Variable
-from functions_table import FunctionsTable
+from functions_table import *
 
 from memory import Memory
 
@@ -31,7 +27,6 @@ from vm import *
 
 functions_directory = FunctionsTable()
 memory = Memory()
-
 # Global function
 # Mathrix = Function('Mathrix', Types.VOID.value, {}, [], 0)
 # functions_directory._functions['Mathrix'] = Mathrix
@@ -54,6 +49,8 @@ function_stack = []
 era_stack = []
 
 temporal_variables = {}
+dimension_stack = []
+dimension_counter = 0
 
 def p_start(p):
     '''start : sem_start_program global_declaration 
@@ -67,12 +64,17 @@ def p_global_declaration(p):
 
 # Variable declaration
 def p_var_declaration(p):
-    '''var_declaration : var_type ID sem_add_var array SEMICOLON
+    '''var_declaration : var_type ID sem_add_var SEMICOLON 
+    | var_type ID sem_get_matrix_id matrix_declaration SEMICOLON sem_add_matrix
     | empty
     '''
-    
-def p_array(p):
-    '''array : LEFT_BRACKET mega_exp RIGHT_BRACKET array
+
+def p_matrix_declaration(p):
+    '''matrix_declaration : LEFT_BRACKET CTE_I RIGHT_BRACKET sem_add_dim1 LEFT_BRACKET CTE_I RIGHT_BRACKET sem_add_dim2
+    '''
+
+def p_matrix(p):
+    '''matrix : LEFT_BRACKET CTE_I RIGHT_BRACKET LEFT_BRACKET CTE_I RIGHT_BRACKET
     | empty
     '''
 
@@ -84,7 +86,7 @@ def p_func_declaration(p):
 
 #Example function int[2][3] testFunction(int Y)
 def p_func_signature(p):
-    '''func_signature : FUNCTION func_type array func_signature_1 sem_end_func
+    '''func_signature : FUNCTION func_type matrix func_signature_1 sem_end_func
     '''
 
 def p_func_signature_1(p):
@@ -92,8 +94,8 @@ def p_func_signature_1(p):
     '''
 
 def p_param_declaration(p):
-    '''param_declaration : var_type array ID sem_add_param
-    | var_type array ID sem_add_param COMMA param_declaration
+    '''param_declaration : var_type matrix ID sem_add_param
+    | var_type matrix ID sem_add_param COMMA param_declaration
     | empty
     '''
 
@@ -107,7 +109,7 @@ def p_var_cte(p):
     '''var_cte : CTE_I sem_push_constant_int
     | CTE_D sem_push_constant_double
     | cte_b sem_push_constant_bool
-    | ID sem_push_operand array 
+    | ID sem_push_operand matrix 
     | ID sem_check_function LEFT_PAR sem_false_bottom_begin sem_create_era param_call RIGHT_PAR sem_false_bottom_end sem_count_params sem_gosub 
     '''
 
@@ -332,7 +334,7 @@ def p_sem_add_var(p):
     '''
     global current_function, functions_directory, memory
 
-    v = Variable(p[-1], current_type, -1)
+    v = Variable(p[-1], current_type, -1, 0, 0)
     # print("current_function: ", current_function)
     # print(p[-1])
 
@@ -413,7 +415,7 @@ def p_sem_push_constant_int(p):
     types_stack.append(Types.INT.value)
 
     constant_int = "#" + str(constant)
-    constant_int_var = Variable(constant_int, Types.INT.value, -1)
+    constant_int_var = Variable(constant_int, Types.INT.value, -1, 0, 0)
     
     if functions_directory.find_constant(constant_int_var):
         # print("Constant ", constant_int_var.var_id, " was found again")
@@ -434,7 +436,7 @@ def p_sem_push_constant_double(p):
     types_stack.append(Types.DOUBLE.value)
 
     constant_double = "#" + str(constant)
-    constant_double_var = Variable(constant_double, Types.DOUBLE.value, -1)
+    constant_double_var = Variable(constant_double, Types.DOUBLE.value, -1, 0, 0)
 
     if functions_directory.find_constant(constant_double_var):
         # print("Constant ", constant_double_var.var_id, " was found again")
@@ -520,14 +522,13 @@ def p_sem_return_function(p):
         # print("return var: ", return_var)
         # print("type of return var from types stack: ", return_var_type)
 
-        v = Variable(current_function.function_id, return_var_type, return_var)
+        v = Variable(current_function.function_id, return_var_type, return_var, 0, 0)
         operands_stack.append(return_var)
         types_stack.append(return_var_type)
 
         # Add return value to global variables
         global_function = functions_directory.find_function("Mathrix")
         functions_directory.add_variable(v, global_function, memory)
-
         var_address = functions_directory.find_var_address(v.var_id, "Mathrix")
 
         # Create RETURN quad
@@ -619,11 +620,12 @@ def p_sem_add_param(p):
     '''
     global functions_directory, current_function, memory
     
-    v = Variable(p[-1], current_type, -1)
+    v = Variable(p[-1], current_type, -1, 0, 0)
     #print(p[-1])
 
     # Parameter = local variable
     functions_directory.add_variable(v, current_function, memory)
+
     functions_directory.add_param(v, current_function)
 
 def p_sem_check_function(p):
@@ -742,7 +744,7 @@ def p_sem_gosub(p):
         # Assign result of return value to a temp var
         temp = "t" + str(temp_counter)
         temp_counter+=1
-        temp_var = Variable(temp, function_called.function_type, -1)
+        temp_var = Variable(temp, function_called.function_type, -1, 0, {})
         temp_var.var_address = memory.set_temp_address(temp_var)
         
         operands_stack.append(temp_var.var_address)
@@ -828,6 +830,54 @@ def p_sem_fill_eras(p):
         quadruples_list[quad]['right_operand'] = temp_doubles
         quadruples_list[quad]['result'] = temp_bools
 
+# Matrices
+def p_sem_get_matrix_id(p):
+    '''sem_get_matrix_id : empty
+    '''
+    global matrix_id
+    matrix_id = p[-1]
+
+def p_sem_add_dim1(p):
+    '''sem_add_dim1 : empty
+    '''
+    global dim1_dict
+
+    lim_s = p[-2]
+    if lim_s < 0:
+        print("Error. Invalid matrix dimension")
+        exit(1)
+
+    dim1_dict = Dimension(0, lim_s, 0)
+
+def p_sem_add_dim2(p):
+    '''sem_add_dim2 : empty
+    '''
+    global dim2_dict
+
+    lim_s = p[-2]
+    if lim_s < 0:
+        print("Error. Invalid matrix dimension")
+        exit(1)
+
+    dim2_dict = Dimension(0, lim_s, 0)
+
+def p_sem_add_matrix(p):
+    '''sem_add_matrix : empty
+    '''
+    global matrix_id, dim1_dict, dim2_dict
+
+    # Formulas for 2 dimensional arrays
+    r1 = 1 * (dim1_dict.lim_s - 0 + 1)
+    m0 = r1 * (dim2_dict.lim_s - 0 + 1)
+    
+    m1 = m0 / (dim1_dict.lim_s - 0 + 1)
+    dim1_dict.k = int(m1*-1)
+
+    # print("dim1_dict: ", dim1_dict)
+    # print("dim2_dict: ", dim2_dict)
+
+    v = Variable(matrix_id, current_type, -1, dim1_dict, dim2_dict)
+    functions_directory.add_variable(v, current_function, memory)
 
 
 parser_Mathrix = yacc.yacc()

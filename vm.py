@@ -35,7 +35,7 @@ def process_quads(quadruples_list):
     while(instruction_pointer < len(quadruples_list)):
         current_quad = quadruples_list[instruction_pointer]
 
-        # print("current_quad: ", current_quad)
+        print("current_quad: ", current_quad)
         # print("memory: ", em.memory)
 
         # Determine operations

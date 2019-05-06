@@ -46,12 +46,20 @@ class Memory:
         # Assign address for int var
         if (variable.var_type == Types.INT.value):
             address = self.cte_int + self.cte_int_counter
-            self.cte_int_counter+=1
+            if self.is_matrix(variable):
+                m0 = self.calculate_m0(variable)
+                self.cte_int_counter += m0
+            else:
+                self.cte_int_counter+=1 
             return address
             # Assign address for double var
         elif (variable.var_type == Types.DOUBLE.value):
             address = self.cte_double + self.cte_double_counter
-            self.cte_double_counter+=1
+            if self.is_matrix(variable):
+                m0 = self.calculate_m0(variable)
+                self.cte_double_counter += m0
+            else:
+                self.cte_double_counter+=1 
             return address
             # Assign address for bool var
         elif (variable.var_type == Types.BOOL.value):
@@ -63,12 +71,20 @@ class Memory:
         # Assign address for int var
             if (variable.var_type == Types.INT.value):
                 address = self.temp_int + self.temp_int_counter
-                self.temp_int_counter+=1
+                if self.is_matrix(variable):
+                    m0 = self.calculate_m0(variable)
+                    self.temp_int_counter += m0
+                else:
+                    self.temp_int_counter+=1 
                 return address
             # Assign address for double var
             elif (variable.var_type == Types.DOUBLE.value):
                 address = self.temp_double + self.temp_double_counter
-                self.temp_double_counter+=1
+                if self.is_matrix(variable):
+                    m0 = self.calculate_m0(variable)
+                    self.temp_double_counter += m0
+                else:
+                    self.temp_double_counter+=1 
                 return address
             # Assign address for bool var
             elif (variable.var_type == Types.BOOL.value):
@@ -84,12 +100,20 @@ class Memory:
             # Assign address for int var
             if (variable.var_type == Types.INT.value):
                 address = self.global_int + self.global_int_counter
-                self.global_int_counter+=1
+                if self.is_matrix(variable):
+                    m0 = self.calculate_m0(variable)
+                    self.global_int_counter += m0
+                else:
+                    self.global_int_counter+=1 
                 return address
             # Assign address for double var
             elif (variable.var_type == Types.DOUBLE.value):
                 address = self.global_double + self.global_double_counter
-                self.global_double_counter+=1
+                if self.is_matrix(variable):
+                    m0 = self.calculate_m0(variable)
+                    self.global_double_counter += m0
+                else:
+                    self.global_double_counter+=1 
                 return address
             # Assign address for bool var
             elif (variable.var_type == Types.BOOL.value):
@@ -101,12 +125,20 @@ class Memory:
             # Assign address for int var
             if (variable.var_type == Types.INT.value):
                 address = self.local_int + self.local_int_counter
-                self.local_int_counter+=1
+                if self.is_matrix(variable):
+                    m0 = self.calculate_m0(variable)
+                    self.local_int_counter += m0
+                else:
+                    self.local_int_counter+=1 
                 return address
             # Assign address for double var
             elif (variable.var_type == Types.DOUBLE.value):
                 address = self.local_double + self.local_double_counter
-                self.local_double_counter+=1
+                if self.is_matrix(variable):
+                    m0 = self.calculate_m0(variable)
+                    self.local_double_counter += m0
+                else:
+                    self.local_double_counter+=1 
                 return address
             # Assign address for bool var
             elif (variable.var_type == Types.BOOL.value):
@@ -124,7 +156,13 @@ class Memory:
         self.temp_double_counter = 0
         self.temp_bool_counter = 0
 
-
-
+    def is_matrix(self, variable):
+        if variable.var_dim1_dict != 0:
+            return True
     
+    def calculate_m0(self, variable):
+        # Formulas for 2 dimensional arrays
+        r1 = 1 * (variable.var_dim1_dict.lim_s - 0 + 1)
+        m0 = r1 * (variable.var_dim2_dict.lim_s - 0 + 1)
+        return m0
 

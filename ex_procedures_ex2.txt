@@ -16,7 +16,7 @@ function int dos (int b){
 }
 
 Main{
-    i = 2;
+    read(i);
     j = i * 2 - 1;
 
     uno(j);

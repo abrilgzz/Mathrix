@@ -11,9 +11,9 @@ class Function(dict):
         self.doubles = doubles
         self.bools = bools
     
-    def declare_variable(self, var_id, var_type, var_address):
+    def declare_variable(self, var_id, var_type, var_address, var_dim1_dict, var_dim2_dict):
         # Create variable
-        v = Variable(var_id, var_type, var_address)
+        v = Variable(var_id, var_type, var_address, var_dim1_dict, var_dim2_dict)
         # Append to variables_directory
         self.variables_directory[var_id] = v
        

@@ -1,5 +1,6 @@
 from variable import Variable
 from function import Function
+from dimension import Dimension
 from pprint import *
 
 class FunctionsTable:
@@ -61,13 +62,6 @@ class FunctionsTable:
                 print("Undefined variable 2: ", var_id)
                 exit(1)
 
-    #     # Check if it is a local variable
-    #     for f in self._functions:
-    #         if var_id in self._functions[f].variables_directory:
-    #             return self._functions[f].variables_directory[var_id].var_type
-    #    # Variable is not found 
-    #     print("Undefined variable")
-    #     exit(1)
 
     def find_var_address(self, var_id, function_id):
         # Check if it is a  local variable
@@ -112,7 +106,7 @@ class FunctionsTable:
             else:
                 item.var_address = memory.set_address(item, current_function.function_id)
                 f = self._functions[current_function.function_id]
-                f.declare_variable(item.var_id, item.var_type, item.var_address)
+                f.declare_variable(item.var_id, item.var_type, item.var_address, item.var_dim1_dict, item.var_dim2_dict)
                 # print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
                 # print(self._functions[current_function.function_id].variables_directory.items())
         else:
@@ -124,23 +118,11 @@ class FunctionsTable:
             else:
                 item.var_address = memory.set_address(item, current_function.function_id)
                 f = self._functions[current_function.function_id]
-                f.declare_variable(item.var_id, item.var_type, item.var_address)
+                f.declare_variable(item.var_id, item.var_type, item.var_address, item.var_dim1_dict, item.var_dim2_dict)
                 # print("Variable: ", item.var_id, " added to function: ", current_function.function_id)
                 # print(self._functions[current_function.function_id].variables_directory.items())
 
-        
-        # variables_directory = self._functions[current_function.function_id].variables_directory.items()
-
-        # if item.var_id in variables_directory:
-        #     print("Error, variable {} already exists".format(item.var_id))
-        #     exit(1)
-        # else:
-        #     f = self._functions[current_function.function_id]
-        #     f.declare_variable(item.var_id, item.var_type, item.var_address)
-            # self._functions[current_function.function_id].variables_directory[item.var_id] = item.var_type
-            # print("Variable added")
-            # print(self._functions[current_function.function_id].variables_directory.items())
-    
+ 
     def find_constant(self, item):
         variables_directory = self._functions["Mathrix"].variables_directory
 
@@ -154,7 +136,7 @@ class FunctionsTable:
         #print(self._functions["Mathrix"].variables_directory.items())
 
         f  = self._functions["Mathrix"]
-        f.declare_variable(item.var_id, item.var_type, item.var_address)
+        f.declare_variable(item.var_id, item.var_type, item.var_address, item.var_dim1_dict, item.var_dim2_dict)
         #print("Constant added: ", item.var_id)
 
 
@@ -167,6 +149,6 @@ class FunctionsTable:
     def print_table(self):
         for f in self._functions.items():
             print(f[1])
-            for var in f[1].variables_directory.items():
-                print("Variables directory: ", var[1])
+            for func in f[1].variables_directory.items():
+                print("Variables directory: ", func[1])
             

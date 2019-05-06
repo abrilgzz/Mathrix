@@ -30,7 +30,7 @@ def create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp
     else:
         # Create temporary registry 
         temp = "t" + str(temp_counter)
-        temp_var = Variable(temp, result_type, -1)
+        temp_var = Variable(temp, result_type, -1, 0, 0)
         temp_var.var_address = memory.set_temp_address(temp_var)
         
         # Add to temporal vars dict
@@ -61,16 +61,6 @@ def create_GOTOF_quad(operands_stack, types_stack):
 def create_GOTO_quad():
         q = define_quad(Operations.GOTO.value, -1, -1, -1)
         return q
-
-        # expression_type = types_stack.pop()
-
-        # # Check if expression type is boolean
-        # if(expression_type == 2):
-        #         q = define_quad(Operations.GOTO.value, -1, -1, -1)
-        #         return q
-        # else:
-        #         print("Error, type mismatch, expression is not boolean")
-        #         exit(1)
 
 # Creates quadruple for assignments
 def assignment_quad(operators_stack, operands_stack, types_stack):
