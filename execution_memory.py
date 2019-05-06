@@ -51,9 +51,17 @@ class ExecutionMemory(object):
     def get_variable_value(self, address, current_function):
         # print("address: ", address)
         # print("current_function: ", current_function)
-        if self.is_address_reference(address):
-            address = self.dereference(address)
 
+        if self.is_constant(address):
+            address = self.convert_constant(address)
+            return int(address)
+
+
+        if self.is_address_reference(address):
+            address = self.dereference(address, current_function)
+            print("address ref here: ", address)
+            # Return value from address
+        
         # Check if it is a global variable
         if (5000 <= address <= 8999):
             if(5000 <= address <= 5999):
@@ -108,7 +116,11 @@ class ExecutionMemory(object):
         # print("memory: ", self.memory)
 
         if self.is_address_reference(address):
-            address = self.dereference(address)
+            address = address[:-1]
+            address = address[1:]
+            address = int(address)
+            address = self.get_variable_value(address, current_function)
+            print("real_address: ", address, "result: ", result)
         
         # if self.is_address_reference(result):
         #     result = self.dereference(result)
@@ -235,11 +247,12 @@ class ExecutionMemory(object):
             return True
 
     def create_matrix(self, variable, current_function):
+        # print("variable address: ", variable.var_address)
         spaces_needed = self.calculate_m0(variable)
         counter = 0
 
         for x in range(0, spaces_needed):
-            self.write_to_memory(variable.var_address + counter, -1, current_function)
+            self.write_to_memory(variable.var_address + counter, 0, current_function)
             counter+=1
 
     def calculate_m0(self, variable):
@@ -248,6 +261,12 @@ class ExecutionMemory(object):
         m0 = r1 * (variable.var_dim2_dict.lim_s - 0 + 1)
         return m0
     
+
+    def is_constant(self, value):
+        value = str(value)
+        if '#' in value:
+            return True
+
     def convert_constant(self, value):
         number = fast_real(value[1:])
         return number
@@ -258,11 +277,14 @@ class ExecutionMemory(object):
             #print("is reference")
             return True
 
-    def dereference(self, address_ref):
+    def dereference(self, address_ref, current_function):
+        print("address_ref: ", address_ref)
         address_ref = address_ref[:-1]
         address_ref = address_ref[1:]
-        print("address_ref: ", address_ref)
-        return int(address_ref)
+        address_ref = int(address_ref)
 
+        address = self.get_variable_value(address_ref, current_function)
+        print("dereferenced: ", address)
+        return address
 
 

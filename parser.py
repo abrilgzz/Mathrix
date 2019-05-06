@@ -864,14 +864,18 @@ def p_sem_add_matrix(p):
     '''
     global matrix_id, lim_s1, lim_s2
 
-    dim1_dict = Dimension(0, lim_s1, 0)
-    dim2_dict = Dimension(0, lim_s2, 0)
+    dim1_dict = Dimension(0, int(lim_s1), 0)
+    dim2_dict = Dimension(0, int(lim_s2), 0)
     # Formulas for 2 dimensional arrays
     r1 = 1 * (dim1_dict.lim_s - 0 + 1)
     m0 = r1 * (dim2_dict.lim_s - 0 + 1)
     
     m1 = m0 / (dim1_dict.lim_s - 0 + 1)
-    dim1_dict.k = int(m1*-1)
+    dim1_dict.k = int(m1)
+    m2 = m1 / (dim2_dict.lim_s - 0 + 1)
+
+    suma = 0 + dim2_dict.lim_i * m2
+    dim2_dict.k = int(suma * -1)
 
     # print("dim1_dict: ", dim1_dict)
     # print("dim2_dict: ", dim2_dict)
@@ -921,11 +925,13 @@ def p_sem_ver_dim1(p):
 
     # Create dim1*m1 quad
     operators_stack.append(Operations.MULTIPLY.value)
-    m1 = matrix_var.var_dim1_dict.k
+    m1 = int(matrix_var.var_dim1_dict.k)
 
     # Register m1 as constant
     types_stack.append(Types.INT.value)
     constant_int = "#" + str(m1)
+    print("m1: ", constant_int)
+
     constant_int_var = Variable(constant_int, Types.INT.value, -1, 0, 0)
     if functions_directory.find_constant(constant_int_var):
         # print("Constant ", constant_int_var.var_id, " was found again")
@@ -978,15 +984,16 @@ def p_sem_ver_dim2(p):
     # Add matrix base address
     operators_stack.append(Operations.PLUS.value)
     base_address = matrix_var.var_address
-    operands_stack.append(base_address)
+    base_address_cte = "#" + str(base_address)
+    operands_stack.append(base_address_cte)
     types_stack.append(Types.INT.value)
 
     q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
     quadruples_list.append(q)
+    
     # Distinguish address 
     result = operands_stack.pop()
     result_address = '(' + str(result) + ')'
-    quadruples_list[quad_counter]['result'] = result_address
     
     operands_stack.append(result_address)
 
