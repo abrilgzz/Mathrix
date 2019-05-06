@@ -70,11 +70,12 @@ def p_var_declaration(p):
     '''
 
 def p_matrix_declaration(p):
-    '''matrix_declaration : LEFT_BRACKET CTE_I RIGHT_BRACKET sem_get_dim1 LEFT_BRACKET CTE_I RIGHT_BRACKET sem_get_dim2
+    '''matrix_declaration : LEFT_BRACKET CTE_I sem_get_dim1 RIGHT_BRACKET LEFT_BRACKET CTE_I sem_get_dim2 RIGHT_BRACKET 
+    | empty
     '''
 
 def p_matrix(p):
-    '''matrix : LEFT_BRACKET mega_exp RIGHT_BRACKET LEFT_BRACKET mega_exp RIGHT_BRACKET
+    '''matrix : LEFT_BRACKET sem_check_dim1 exp RIGHT_BRACKET sem_ver_dim1 LEFT_BRACKET sem_check_dim2 exp RIGHT_BRACKET sem_ver_dim2
     | empty
     '''
 
@@ -84,9 +85,10 @@ def p_func_declaration(p):
     | main
     '''
 
+# TODO: check func signature and param declaration
 #Example function int[2][3] testFunction(int Y)
 def p_func_signature(p):
-    '''func_signature : FUNCTION func_type matrix func_signature_1 sem_end_func
+    '''func_signature : FUNCTION func_type matrix_declaration func_signature_1 sem_end_func
     '''
 
 def p_func_signature_1(p):
@@ -94,8 +96,8 @@ def p_func_signature_1(p):
     '''
 
 def p_param_declaration(p):
-    '''param_declaration : var_type ID matrix sem_add_param
-    | var_type ID matrix sem_add_param COMMA param_declaration
+    '''param_declaration : var_type ID matrix_declaration sem_add_param
+    | var_type ID matrix_declaration sem_add_param COMMA param_declaration
     | empty
     '''
 
@@ -145,7 +147,7 @@ def p_statement(p):
     '''
 
 def p_assignment(p):
-    '''assignment : ID sem_push_operand ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
+    '''assignment : ID sem_push_operand matrix ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
     '''
 
 def p_return(p):
@@ -841,7 +843,8 @@ def p_sem_get_dim1(p):
     '''
     global lim_s1
 
-    lim_s1 = p[-2]
+    lim_s1 = p[-1]
+
     if lim_s1 < 0:
         print("Error. Invalid matrix dimension")
         exit(1)
@@ -851,7 +854,7 @@ def p_sem_get_dim2(p):
     '''
     global lim_s2
 
-    lim_s2 = p[-2]
+    lim_s2 = p[-1]
     if lim_s2 < 0:
         print("Error. Invalid matrix dimension")
         exit(1)
@@ -877,6 +880,109 @@ def p_sem_add_matrix(p):
     functions_directory.add_variable(v, current_function, memory)
 
 # Matrix access
+def p_sem_check_dim1(p):
+    '''sem_check_dim1 : empty
+    '''
+    global operands_stack, current_function, matrix_var, dimension_stack, lim_s1
+    
+    matrix_address = operands_stack.pop()
+
+    # Check that current variable is a matrix
+    matrix_id = functions_directory.find_var_id(matrix_address, current_function)
+    matrix_var = functions_directory.find_variable(matrix_id, current_function.function_id)
+
+    if matrix_var.var_dim1_dict == 0:
+        print("Error. Variable is not a matrix.")
+        exit(1)
+    
+    dim = 1
+    matrix_dim1 = (matrix_var.var_id, dim)
+    dimension_stack.append(matrix_dim1)
+
+    # Get matrix's first dimension lim_s1
+    lim_s1 = matrix_var.var_dim1_dict.lim_s
+    #print("lim_s1:", lim_s1)
+
+    # Push false bottom into operators stack
+    operators_stack.append(Operations.LEFT_BRACKET.value)
+
+def p_sem_ver_dim1(p):
+    '''sem_ver_dim1 : empty
+    '''
+    global quad_counter, operands_stack, lim_s1, operators_stack, temp_counter, types_stack
+
+    operands_stack_top = operands_stack[-1]
+    operands_stack_top_id = functions_directory.find_var_id(operands_stack_top, current_function)
+
+    # Verification quad
+    q = define_quad(Operations.VER.value, operands_stack_top_id, 0, lim_s1) 
+    quadruples_list.append(q)
+    quad_counter+=1
+
+    # Create dim1*m1 quad
+    operators_stack.append(Operations.MULTIPLY.value)
+    m1 = matrix_var.var_dim1_dict.k
+    operands_stack.append(m1)
+    types_stack.append(Types.INT.value)
+
+    q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
+    quadruples_list.append(q)
+    quad_counter+=1
+    temp_counter+=1
+
+
+def p_sem_check_dim2(p):
+    '''sem_check_dim2 : empty
+    '''
+    global operands_stack, current_function, matrix_var, dimension_stack, lim_s2
+    
+    # Get matrix's first dimension lim_s
+    lim_s2 = matrix_var.var_dim2_dict.lim_s
+    #print("lim_s 2:", lim_s2)
+
+    # Push false bottom into operators stack
+    operators_stack.append(Operations.LEFT_BRACKET.value)
+
+def p_sem_ver_dim2(p):
+    '''sem_ver_dim2 : empty
+    '''
+    global quad_counter, operands_stack, lim_s2, temp_counter
+
+    operands_stack_top = operands_stack[-1]
+    operands_stack_top_id = functions_directory.find_var_id(operands_stack_top, current_function)
+
+    q = define_quad(Operations.VER.value, operands_stack_top_id, 0, lim_s2) 
+    quadruples_list.append(q)
+    quad_counter+=1
+
+    # Create dim1*m1 + dim2 quad
+    operators_stack.append(Operations.PLUS.value)
+    q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
+    quadruples_list.append(q)
+    quad_counter+=1
+    temp_counter+=1
+
+    # Add matrix base address
+    operators_stack.append(Operations.PLUS.value)
+    base_address = matrix_var.var_address
+    operands_stack.append(base_address)
+    types_stack.append(Types.INT.value)
+
+    q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
+    quadruples_list.append(q)
+    # Distinguish address 
+    result = operands_stack.pop()
+    result_address = '(' + str(result) + ')'
+    quadruples_list[quad_counter]['result'] = result_address
+    
+    operands_stack.append(result_address)
+
+    quad_counter+=1
+    temp_counter+=1
+
+    # Pop false bottom from operators stack
+    operators_stack.pop()
+
 
 
 parser_Mathrix = yacc.yacc()
@@ -899,7 +1005,7 @@ if __name__ == '__main__':
             functions_directory.print_table()
 
             # Run virtual machine
-            run(functions_directory, quadruples_list)
+            # run(functions_directory, quadruples_list)
 
             # process_quads(quadruples_list)
 

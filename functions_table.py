@@ -32,7 +32,6 @@ class FunctionsTable:
         else:
             return True
 
-    
     def find_variable(self, var_id, function_id):
         # print("function id at find_variable: ", function_id)
         # print("var_id: ", var_id, "function_id: ", function_id)
@@ -139,12 +138,19 @@ class FunctionsTable:
         f.declare_variable(item.var_id, item.var_type, item.var_address, item.var_dim1_dict, item.var_dim2_dict)
         #print("Constant added: ", item.var_id)
 
-
     # Add parameter
     def add_param(self, item, current_function):
         self._functions[current_function.function_id].params_list.append(item.var_type)
         # print("Parameter type added")
         # print(self._functions[current_function.function_id].params_list)
+
+    # Get var_id from var_address
+    def find_var_id(self, var_address, current_function):
+        variables_directory = self._functions[current_function.function_id].variables_directory
+        
+        for v in variables_directory.items():
+            if v[1].var_address == var_address:
+                return v[1].var_id
 
     def print_table(self):
         for f in self._functions.items():

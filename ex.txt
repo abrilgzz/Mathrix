@@ -1,10 +1,10 @@
 int a;
 double b;
-int m[5][5];
+int m[5][7];
 int c;
 
 Main {
-    a = 3;
-    b = a - -3;
+    m[1][2] = 1;
+    b = 3;
     write(b);
 }

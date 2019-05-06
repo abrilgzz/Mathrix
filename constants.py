@@ -38,6 +38,11 @@ class Operations(IntEnum):
     ENDPROC = 25
     END = 26
     GLOBALERA = 27
+    # Matrices
+    VER = 28
+    # Brackets
+    LEFT_BRACKET = 29
+    RIGHT_BRACKET = 30
     
     
 class Errors(IntEnum):
