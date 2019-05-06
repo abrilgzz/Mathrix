@@ -70,11 +70,11 @@ def p_var_declaration(p):
     '''
 
 def p_matrix_declaration(p):
-    '''matrix_declaration : LEFT_BRACKET CTE_I RIGHT_BRACKET sem_add_dim1 LEFT_BRACKET CTE_I RIGHT_BRACKET sem_add_dim2
+    '''matrix_declaration : LEFT_BRACKET CTE_I RIGHT_BRACKET sem_get_dim1 LEFT_BRACKET CTE_I RIGHT_BRACKET sem_get_dim2
     '''
 
 def p_matrix(p):
-    '''matrix : LEFT_BRACKET CTE_I RIGHT_BRACKET LEFT_BRACKET CTE_I RIGHT_BRACKET
+    '''matrix : LEFT_BRACKET mega_exp RIGHT_BRACKET LEFT_BRACKET mega_exp RIGHT_BRACKET
     | empty
     '''
 
@@ -94,8 +94,8 @@ def p_func_signature_1(p):
     '''
 
 def p_param_declaration(p):
-    '''param_declaration : var_type matrix ID sem_add_param
-    | var_type matrix ID sem_add_param COMMA param_declaration
+    '''param_declaration : var_type ID matrix sem_add_param
+    | var_type ID matrix sem_add_param COMMA param_declaration
     | empty
     '''
 
@@ -643,12 +643,10 @@ def p_sem_check_function(p):
     if (functions_directory.function_exists(function_name)):
         current_function = functions_directory.find_function(function_name)
         function_stack.append(current_function.params_list)
-
     
     # print(function_stack)
     # for f in function_stack:
     #     print ("function id in fs: ", f.function_id)
-
 
 def p_sem_create_era(p):
     '''sem_create_era : empty
@@ -831,41 +829,40 @@ def p_sem_fill_eras(p):
         quadruples_list[quad]['result'] = temp_bools
 
 # Matrices
+# Matrix declaration
 def p_sem_get_matrix_id(p):
     '''sem_get_matrix_id : empty
     '''
     global matrix_id
     matrix_id = p[-1]
 
-def p_sem_add_dim1(p):
-    '''sem_add_dim1 : empty
+def p_sem_get_dim1(p):
+    '''sem_get_dim1 : empty
     '''
-    global dim1_dict
+    global lim_s1
 
-    lim_s = p[-2]
-    if lim_s < 0:
+    lim_s1 = p[-2]
+    if lim_s1 < 0:
         print("Error. Invalid matrix dimension")
         exit(1)
 
-    dim1_dict = Dimension(0, lim_s, 0)
-
-def p_sem_add_dim2(p):
-    '''sem_add_dim2 : empty
+def p_sem_get_dim2(p):
+    '''sem_get_dim2 : empty
     '''
-    global dim2_dict
+    global lim_s2
 
-    lim_s = p[-2]
-    if lim_s < 0:
+    lim_s2 = p[-2]
+    if lim_s2 < 0:
         print("Error. Invalid matrix dimension")
         exit(1)
-
-    dim2_dict = Dimension(0, lim_s, 0)
 
 def p_sem_add_matrix(p):
     '''sem_add_matrix : empty
     '''
-    global matrix_id, dim1_dict, dim2_dict
+    global matrix_id, lim_s1, lim_s2
 
+    dim1_dict = Dimension(0, lim_s1, 0)
+    dim2_dict = Dimension(0, lim_s2, 0)
     # Formulas for 2 dimensional arrays
     r1 = 1 * (dim1_dict.lim_s - 0 + 1)
     m0 = r1 * (dim2_dict.lim_s - 0 + 1)
@@ -878,6 +875,8 @@ def p_sem_add_matrix(p):
 
     v = Variable(matrix_id, current_type, -1, dim1_dict, dim2_dict)
     functions_directory.add_variable(v, current_function, memory)
+
+# Matrix access
 
 
 parser_Mathrix = yacc.yacc()
