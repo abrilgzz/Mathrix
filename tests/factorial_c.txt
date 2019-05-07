@@ -1,0 +1,17 @@
+int i;
+int factorial;
+
+Main {
+    int n;
+    factorial = 1;
+    i = 1;
+
+    read(n);
+
+    while (i <= n){
+        factorial = factorial * i;
+        i = i + 1;
+    }
+
+    write(factorial);
+}

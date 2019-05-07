@@ -43,7 +43,7 @@ class Memory:
     
 
     def set_cte_address(self, variable):
-        # Assign address for int var
+        # Assign address for int variable
         if (variable.var_type == Types.INT.value):
             address = self.cte_int + self.cte_int_counter
             if self.is_matrix(variable):
@@ -52,7 +52,7 @@ class Memory:
             else:
                 self.cte_int_counter+=1 
             return address
-            # Assign address for double var
+            # Assign address for double variable
         elif (variable.var_type == Types.DOUBLE.value):
             address = self.cte_double + self.cte_double_counter
             if self.is_matrix(variable):
@@ -61,14 +61,14 @@ class Memory:
             else:
                 self.cte_double_counter+=1 
             return address
-            # Assign address for bool var
+            # Assign address for bool variable
         elif (variable.var_type == Types.BOOL.value):
             address = self.cte_bool + self.cte_bool_counter
             self.cte_bool_counter+=1
             return address
         
     def set_temp_address(self, variable):
-        # Assign address for int var
+        # Assign address for int variable
             if (variable.var_type == Types.INT.value):
                 address = self.temp_int + self.temp_int_counter
                 if self.is_matrix(variable):
@@ -77,7 +77,7 @@ class Memory:
                 else:
                     self.temp_int_counter+=1 
                 return address
-            # Assign address for double var
+            # Assign address for double variable
             elif (variable.var_type == Types.DOUBLE.value):
                 address = self.temp_double + self.temp_double_counter
                 if self.is_matrix(variable):
@@ -86,7 +86,7 @@ class Memory:
                 else:
                     self.temp_double_counter+=1 
                 return address
-            # Assign address for bool var
+            # Assign address for bool variable
             elif (variable.var_type == Types.BOOL.value):
                 address = self.temp_bool + self.temp_bool_counter
                 self.temp_bool_counter+=1

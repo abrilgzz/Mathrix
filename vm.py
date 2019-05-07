@@ -9,35 +9,34 @@ function_stack = []
 function_counter = 0
 
 em = ExecutionMemory()
-current_function = "Mathrix"
+current_function = 'Mathrix'
 
-
+# Function that truncates floats
 def truncate(number, digits) -> float:
     stepper = pow(10.0, digits)
     return math.trunc(stepper * number) / stepper
 
+# Function that initializes Global variables and runs main
 def run(functions_directory, quadruples_list):
     # Generate ERA for global function
-    # print("global var dict: ", functions_directory._functions['Mathrix'].variables_directory)
     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
-
     # Add global function to function stack
-    function_stack.append("Mathrix")
-    
+    function_stack.append('Mathrix')
+    print("*********START OUTPUT**********")
     # Process quadruples list
     process_quads(quadruples_list)
 
 
+# Function that processes the list of quadruples according to the operator in each quad
 def process_quads(quadruples_list):
     global instruction_pointer, current_function, function_counter
 
-
     while(instruction_pointer < len(quadruples_list)):
         current_quad = quadruples_list[instruction_pointer]
-
-        print("current_quad: ", current_quad)
+        
+        # DEBUGGING
+        # print("current_quad: ", current_quad)
         # print("memory: ", em.memory)
-
         # Determine operations
         if(current_quad['operator'] == Operations.PLUS.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
@@ -83,13 +82,11 @@ def process_quads(quadruples_list):
         elif(current_quad['operator'] == Operations.ISEQUAL.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
             right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
-            
             result = left_operand == right_operand
-            
-            
+
             em.write_to_memory(current_quad['result'], result, current_function)
             instruction_pointer+=1
-        elif(current_quad['operator'] == Operations.GREATERTHAN.value):
+        elif(current_quad['operator'] == Operations.NOTEQUAL.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
             right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
             result = left_operand != right_operand
@@ -114,6 +111,13 @@ def process_quads(quadruples_list):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
             right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
             result = left_operand < right_operand
+            
+            em.write_to_memory(current_quad['result'], result, current_function)
+            instruction_pointer+=1
+        elif(current_quad['operator'] == Operations.LESSTHANOREQ.value):
+            left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
+            right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
+            result = left_operand <= right_operand
             
             em.write_to_memory(current_quad['result'], result, current_function)
             instruction_pointer+=1
@@ -148,7 +152,7 @@ def process_quads(quadruples_list):
         elif(current_quad['operator'] == Operations.RETURN.value):
             result = em.get_variable_value(current_quad['left_operand'], current_function)
             temp_func_storage = current_function
-            current_function = "Mathrix"
+            current_function = 'Mathrix'
             em.write_to_memory(current_quad['result'], result, current_function)
             current_function = temp_func_storage
             instruction_pointer+=1
@@ -168,7 +172,6 @@ def process_quads(quadruples_list):
             param = em.get_variable_value(current_quad['left_operand'], current_function)
             param_type = current_quad['right_operand']
             param_number = current_quad['result'][2:]
-
             # print("param: ", param)
             # print("param_type: ", param_type)
             # print("param_number: ", param_number)
@@ -193,12 +196,20 @@ def process_quads(quadruples_list):
         # elif(current_quad['operator'] == Operations.GLOBALERA.value):
         #     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
         
+        # Matrices
+        elif(current_quad['operator'] == Operations.VER.value):
+            index = current_quad['left_operand']
+            lim_i = current_quad['right_operand']
+            lim_s = current_quad['result']
+            #TODO:  this
+            instruction_pointer+=1
         elif(current_quad['operator'] == Operations.ENDPROC.value):
             instruction_pointer = instruction_pointer_stack.pop()
             em.clear_memory(current_function)
             current_function = function_stack.pop()
         elif(current_quad['operator'] == Operations.END.value):
-            # print("final memory looks like this: ", em.memory)
+            print("**********END OUTPUT***********")
+            print("final memory looks like this: ", em.memory)
             em.end_program()
             print("Goodbye!")
             exit(1)

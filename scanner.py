@@ -11,7 +11,7 @@ import ply.lex as lex
 # Tokens
 # -----------------------------------------------------------------------------
 tokens = [
-    'ID', 'CTE_I', 'CTE_D', 'CTE_S', 
+    'ID', 'CTE_I', 'CTE_D', 'CTE_B',  
     'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE',
     'IS_EQUAL_TO', 'NOT_EQUAL_TO', 
     'GREATER_THAN', 'LESS_THAN', 
@@ -42,6 +42,7 @@ reservedWords = {
     'false': 'FALSE',
     'read': 'READ',
     'write': 'WRITE',
+    'matrix': 'MATRIX',
     # Special functions
     'find_determinant': 'FIND_DETERMINANT',
     'transpose_matrix': 'TRANSPOSE_MATRIX',
@@ -106,8 +107,6 @@ def t_CTE_I(t):
     r'-?[0-9]+'
     t.value = int(t.value)
     return t
-
-
 
 # New lines and errors
 def t_newline(t):
