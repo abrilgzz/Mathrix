@@ -34,7 +34,7 @@ def process_quads(quadruples_list):
         current_quad = quadruples_list[instruction_pointer]
         
         # DEBUGGING
-        # print("current_quad: ", current_quad)
+        print("current_quad: ", current_quad)
         # print("memory: ", em.memory)
 
         # Determine operations
@@ -82,13 +82,11 @@ def process_quads(quadruples_list):
         elif(current_quad['operator'] == Operations.ISEQUAL.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
             right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
-            
             result = left_operand == right_operand
-            
-            
+
             em.write_to_memory(current_quad['result'], result, current_function)
             instruction_pointer+=1
-        elif(current_quad['operator'] == Operations.GREATERTHAN.value):
+        elif(current_quad['operator'] == Operations.NOTEQUAL.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
             right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
             result = left_operand != right_operand
@@ -113,6 +111,13 @@ def process_quads(quadruples_list):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
             right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
             result = left_operand < right_operand
+            
+            em.write_to_memory(current_quad['result'], result, current_function)
+            instruction_pointer+=1
+        elif(current_quad['operator'] == Operations.LESSTHANOREQ.value):
+            left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
+            right_operand = em.get_variable_value(current_quad['right_operand'], current_function)
+            result = left_operand <= right_operand
             
             em.write_to_memory(current_quad['result'], result, current_function)
             instruction_pointer+=1

@@ -110,11 +110,11 @@ def p_var_type(p):
     '''
 
 def p_var_cte(p):
-    '''var_cte : CTE_I sem_push_constant_int
+    '''var_cte : ID sem_check_function LEFT_PAR sem_false_bottom_begin sem_create_era param_call RIGHT_PAR sem_false_bottom_end sem_count_params sem_gosub_assign 
+    | CTE_I sem_push_constant_int
     | CTE_D sem_push_constant_double
     | cte_b sem_push_constant_bool
     | ID sem_push_operand matrix 
-    | ID sem_check_function LEFT_PAR sem_false_bottom_begin sem_create_era param_call RIGHT_PAR sem_false_bottom_end sem_count_params sem_gosub 
     '''
 
 def p_cte_b(p):
@@ -228,7 +228,6 @@ def p_factor(p):
     | MINUS sem_push_operator var_cte
     '''
 
-
 def p_condition(p):
     '''condition : IF LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block condition_1 sem_fill_gotof
     '''
@@ -308,7 +307,7 @@ def p_sem_add_func(p):
     temporal_variables[current_function.function_id][Types.INT.value] = 0
     temporal_variables[current_function.function_id][Types.DOUBLE.value] = 0
     temporal_variables[current_function.function_id][Types.BOOL.value] = 0
-    #print(functions_directory)
+
 
 def p_sem_end_func(p):
     '''sem_end_func : empty
@@ -318,7 +317,7 @@ def p_sem_end_func(p):
     # print("vars counter: ", len(current_function.variables_directory))
     # print("temp_counter: ", temp_counter)
     # print(functions_directory._functions[current_function.function_id].variables_directory)
-
+    
     local_vars = len(current_function.variables_directory)
     function_size = local_vars + temp_counter
     current_function.size = function_size
@@ -357,6 +356,7 @@ def p_sem_end_func(p):
     memory.clear_local_temp_addresses()
 
     function_stack.clear()
+
 
 def p_sem_add_var(p):
     '''sem_add_var : empty
@@ -427,8 +427,10 @@ def p_sem_push_operand(p):
 
     operand = p[-1]
     # Check if variable/operand is declared and get its type
+    print("operand: ", operand)
     variable = functions_directory.find_variable(operand, current_function.function_id)
     var_type = variable.var_type
+    print("ooooo")
 
     # Add variable's memory address to the operands stack
     var_memory_address = functions_directory.find_var_address(operand, current_function.function_id)
@@ -557,6 +559,11 @@ def p_sem_return_function(p):
         operands_stack.append(return_var)
         types_stack.append(return_var_type)
 
+        # TODO: CHECK THIS FOR RECURSION CALLS?
+        # Add return value to function called variables
+        # functions_directory.add_variable(v, current_function, memory)
+        # var_address = functions_directory.find_var_address(v.var_id, current_function.function_id)
+        
         # Add return value to global variables
         global_function = functions_directory.find_function("Mathrix")
         functions_directory.add_variable(v, global_function, memory)
@@ -586,8 +593,7 @@ def p_sem_top_relational(p):
     global quad_counter, temp_counter, current_function, temporal_variables
 
     if(operators_stack[-1:]):
-        if (operators_stack[-1] == Operations.GREATERTHAN.value or operators_stack[-1] == Operations.LESSTHAN.value
-        or operators_stack[-1] == Operations.GREATERTHANOREQ.value or operators_stack[-1] == Operations.LESSTHANOREQ.values):
+        if (operators_stack[-1] == Operations.GREATERTHAN.value or operators_stack[-1] == Operations.LESSTHAN.value or operators_stack[-1] == Operations.GREATERTHANOREQ.value or operators_stack[-1] == Operations.LESSTHANOREQ.value):
             q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
             quadruples_list.append(q)
             quad_counter+=1
@@ -650,7 +656,7 @@ def p_sem_add_param(p):
     '''sem_add_param : empty
     '''
     global functions_directory, current_function, memory
-    
+        
     v = Variable(p[-1], current_type, -1, 0, 0)
     #print(p[-1])
 
@@ -658,6 +664,7 @@ def p_sem_add_param(p):
     functions_directory.add_variable(v, current_function, memory)
 
     functions_directory.add_param(v, current_function)
+    
 
 def p_sem_check_function(p):
     '''sem_check_function : empty
@@ -666,9 +673,9 @@ def p_sem_check_function(p):
 
     global functions_directory, current_function, function_stack, previous_function
 
-    previous_function = current_function
+    #previous_function = current_function
     #print("previous_function: ", previous_function.function_id)
-    function_stack.append(previous_function.params_list)
+    #function_stack.append(previous_function.params_list)
 
     # Verify that the function called exists in functions directory
     if (functions_directory.function_exists(function_name)):
@@ -700,7 +707,7 @@ def p_sem_create_era(p):
 
     quad_counter += 2
     # Return to previous function in order to check local variables
-    current_function = previous_function
+    #current_function = previous_function
 
 def p_sem_check_param(p):
     '''sem_check_param : empty
@@ -758,37 +765,46 @@ def p_sem_gosub(p):
     '''
     global quad_counter, current_function, function_called, function_stack, memory, temp_counter, operands_stack
 
-     
     # Generate GOSUB quad
-    q = define_quad(Operations.GOSUB.value, function_called.function_id, -1, function_called.start_address)
+    q = define_quad(Operations.GOSUB.value, current_function.function_id, -1, current_function.start_address)
     quadruples_list.append(q)
     quad_counter+=1
 
+
+def p_sem_gosub_assign(p):
+    '''sem_gosub_assign : empty
+    '''
+    global quad_counter, current_function, function_called, function_stack, memory, temp_counter, operands_stack
+
     # print("function called: ", function_called.function_id )
     # print("function called type: ", function_called.function_type )
+    q = define_quad(Operations.GOSUB.value, current_function.function_id, -1, current_function.start_address)
+    quadruples_list.append(q)
+    quad_counter+=1
 
     # If function is not void
-
-    if(function_called.function_type != Types.VOID.value):
+    if(current_function.function_type != Types.VOID.value):
         # Assign result of return value to a temp var
         temp = "t" + str(temp_counter)
         temp_counter+=1
-        temp_var = Variable(temp, function_called.function_type, -1, 0, {})
+        temp_var = Variable(temp, current_function.function_type, -1, 0, {})
         temp_var.var_address = memory.set_temp_address(temp_var)
         
         operands_stack.append(temp_var.var_address)
+        
+        print("helo")
         # Store this temporal var in the global var return for this function
-        return_var = functions_directory.find_variable(function_called.function_id, "Mathrix")
+        return_var = functions_directory.find_variable(current_function.function_id, "Mathrix")
         #print("return_var: ", return_var)
-
+        print("gb")
         # Create assignment quad
         q2 = define_quad(Operations.ASSIGN.value, return_var.var_address, -1, temp_var.var_address)
         quadruples_list.append(q2)
         quad_counter+=1
-
+    
     function_stack.pop()
+    print("functions_stack: ", function_stack)
 
-    # print("functions_stack: ", function_stack)
 
 # Start program
 def p_sem_start_program(p):
