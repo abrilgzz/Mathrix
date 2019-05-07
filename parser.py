@@ -52,26 +52,29 @@ temporal_variables = {}
 dimension_stack = []
 dimension_counter = 0
 
+matrix = []
+row = []
+
 def p_start(p):
-    '''start : sem_start_program global_declaration 
+    '''start : sem_start_program declaration func_declaration
     '''
     print('COMPILED')
 
-def p_global_declaration(p):
-    '''global_declaration : var_declaration global_declaration
-    | func_declaration
+
+def p_declaration(p):
+    '''declaration : var_declaration declaration
+    | matrix_declaration declaration
+    | empty
     '''
 
 # Variable declaration
 def p_var_declaration(p):
     '''var_declaration : var_type ID sem_add_var SEMICOLON 
-    | var_type ID sem_get_matrix_id matrix_declaration SEMICOLON sem_add_matrix
-    | empty
     '''
 
+# Matrix declaration
 def p_matrix_declaration(p):
-    '''matrix_declaration : LEFT_BRACKET CTE_I sem_get_dim1 RIGHT_BRACKET LEFT_BRACKET CTE_I sem_get_dim2 RIGHT_BRACKET 
-    | empty
+    '''matrix_declaration : MATRIX var_type ID sem_get_matrix_id LEFT_BRACKET CTE_I sem_get_dim1 RIGHT_BRACKET LEFT_BRACKET CTE_I sem_get_dim2 RIGHT_BRACKET sem_add_matrix SEMICOLON
     '''
 
 def p_matrix(p):
@@ -86,9 +89,8 @@ def p_func_declaration(p):
     '''
 
 # TODO: check func signature and param declaration
-#Example function int[2][3] testFunction(int Y)
 def p_func_signature(p):
-    '''func_signature : FUNCTION func_type matrix_declaration func_signature_1 sem_end_func
+    '''func_signature : FUNCTION func_type func_signature_1 sem_end_func
     '''
 
 def p_func_signature_1(p):
@@ -96,8 +98,8 @@ def p_func_signature_1(p):
     '''
 
 def p_param_declaration(p):
-    '''param_declaration : var_type ID matrix_declaration sem_add_param
-    | var_type ID matrix_declaration sem_add_param COMMA param_declaration
+    '''param_declaration : var_type ID sem_add_param
+    | var_type ID sem_add_param COMMA param_declaration
     | empty
     '''
 
@@ -128,7 +130,7 @@ def p_func_type(p):
     '''
 
 def p_block(p):
-    '''block : LEFT_BRACE var_declaration statements RIGHT_BRACE
+    '''block : LEFT_BRACE declaration statements RIGHT_BRACE
     '''
 
 def p_statements(p):
@@ -137,7 +139,8 @@ def p_statements(p):
     '''
 
 def p_statement(p):
-    '''statement : assignment
+    '''statement : var_assignment
+    | matrix_assignment
     | condition
     | return
     | function_call  
@@ -146,8 +149,32 @@ def p_statement(p):
     | write
     '''
 
-def p_assignment(p):
-    '''assignment : ID sem_push_operand matrix ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
+def p_var_assignment(p):
+    '''var_assignment : ID sem_push_operand matrix ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
+    '''
+
+def p_matrix_assignment(p):
+    '''matrix_assignment : MATRIX ID sem_push_operand ASSIGN sem_push_operator matrix_construct sem_assign_matrix SEMICOLON
+    '''
+
+def p_matrix_construct(p):
+    '''matrix_construct : LEFT_BRACE rows RIGHT_BRACE
+    '''
+
+def p_rows(p):
+    '''rows : row
+    | row COMMA rows
+    '''
+
+def p_row(p):
+    '''row : LEFT_BRACKET col RIGHT_BRACKET sem_push_row sem_clear_row
+    '''
+
+def p_col(p):
+    '''col : CTE_I sem_push_col col
+    | CTE_B sem_push_col col
+    | COMMA col
+    | empty
     '''
 
 def p_return(p):
@@ -396,6 +423,8 @@ def p_sem_push_operator(p):
 def p_sem_push_operand(p):
     '''sem_push_operand : empty
     '''
+    global var_memory_address
+
     operand = p[-1]
     # Check if variable/operand is declared and get its type
     variable = functions_directory.find_variable(operand, current_function.function_id)
@@ -930,7 +959,7 @@ def p_sem_ver_dim1(p):
     # Register m1 as constant
     types_stack.append(Types.INT.value)
     constant_int = "#" + str(m1)
-    print("m1: ", constant_int)
+    # print("m1: ", constant_int)
 
     constant_int_var = Variable(constant_int, Types.INT.value, -1, 0, 0)
     if functions_directory.find_constant(constant_int_var):
@@ -1003,7 +1032,59 @@ def p_sem_ver_dim2(p):
     # Pop false bottom from operators stack
     operators_stack.pop()
 
+# TODO: check that rows and cols match with declaration
+def p_sem_assign_matrix(p):
+    '''sem_assign_matrix : empty
+    '''
+    global matrix, operators_stack, operands_stack, types_stack, quad_counter, var_memory_address
 
+    matrix_address = var_memory_address
+    count_spaces = 0
+
+    for i in matrix:
+        for j in i:
+            operands_stack.append(matrix_address)
+            types_stack.append(Types.INT.value)
+
+            # Add constants
+            operands_stack.append("#" + str(j))
+            types_stack.append(Types.INT.value)
+
+            operators_stack.append(Operations.ASSIGN.value)
+
+            matrix_address+=1
+
+            q = assignment_quad(operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            quad_counter+=1
+
+            count_spaces+=1
+    
+    # Increase memory counter for global ints
+    memory.global_int_counter+= count_spaces
+
+    # Clear matrix
+    matrix = []
+
+def p_sem_clear_row(p):
+    '''sem_clear_row : empty
+    '''
+    global row
+    row = []
+
+def p_sem_push_row(p):
+    '''sem_push_row : empty
+    '''
+    global matrix, row
+    matrix.append(row)
+
+def p_sem_push_col(p):
+    '''sem_push_col : empty
+    '''
+    global row 
+    row.append(p[-1])
+
+## MATHRIX FUNCTIONS
 
 parser_Mathrix = yacc.yacc()
 
@@ -1021,6 +1102,7 @@ if __name__ == '__main__':
             print_quads(quadruples_list)
             #print("quad_counter: ", quad_counter)
             #print("# of quads: ", len(quadruples_list))
+            
             print("Functions directory: ")
             functions_directory.print_table()
 
