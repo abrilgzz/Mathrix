@@ -51,8 +51,7 @@ class ExecutionMemory(object):
     def get_variable_value(self, address, current_function):
         # DEBUGGING
         # print("address: ", address)
-        # print("current_function: ", current_function)
-
+        #print("current_function: ", current_function)
         # Check if address given is a constant to return this as value
         if self.is_constant(address):
             address = self.convert_constant(address)

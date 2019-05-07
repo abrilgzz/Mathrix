@@ -15,11 +15,10 @@ Main {
     matrix n = {[1,1],[1,1]};
     matrix r = {[0,0],[0,0]};
 
-
-    while(i < 2){
-        while(j < 2){
+    while(i <= 1){
+        while(j <= 1){
             r[i][j] = 0;
-            while(k < 2){
+            while(k <= 1){
                 t = r[i][j];
                 r[i][j] = t + m[i][k] * n[k][j];
                 k = k + 1;
@@ -29,8 +28,4 @@ Main {
         i = i + 1;
     }
 
-    write(r[0][0]);
-    write(r[0][1]);
-    write(r[1][0]);
-    write(r[1][1]);
 }

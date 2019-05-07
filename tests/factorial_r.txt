@@ -1,20 +1,22 @@
-int f;
+int i;
+int n;
+int ans;
 
-function int factorial (int n){
-    if(n > 1){
-        return (n * factorial (n - 1));
-    }
-    else{
+function int fact(int x){
+    if(x < 1){
         return 1;
     }
-    return 0;
+    else{
+        return fact(x - 1) * x;
+    }
 }
-
 Main {
-    int n;
-    int factorial;
-    
-    read(n);
+    i = 0;
+    n = 3;
+    ans = 0;
 
-    write(factorial (n));
+    while (i < n){
+        ans = fact(i);
+        i = i + 1;
+    }
 }

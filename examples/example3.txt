@@ -4,24 +4,28 @@ double y;
 function int test1 (int y, double x){
     int b;
     x = 4;
+    return x;
 }
 
 Main {
     int a;
+    x = 1;
+    y = 0;
 
     if(x < 3){
         a = 3;
     }
     else{
-        a = 4;
+        a = 5;
     }
 
     while(y > 3){
         a = 1;
+        y = y + 1;
     }
 
-    test1(a, y);
-
-
+    write(a);
+    write (test1(a, y));
+    write(x);
 
 }

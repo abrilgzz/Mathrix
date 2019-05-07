@@ -22,6 +22,7 @@ def run(functions_directory, quadruples_list):
     em.start_global_memory(functions_directory._functions['Mathrix'].variables_directory)
     # Add global function to function stack
     function_stack.append('Mathrix')
+    print("*********START OUTPUT**********")
     # Process quadruples list
     process_quads(quadruples_list)
 
@@ -34,9 +35,8 @@ def process_quads(quadruples_list):
         current_quad = quadruples_list[instruction_pointer]
         
         # DEBUGGING
-        print("current_quad: ", current_quad)
+        # print("current_quad: ", current_quad)
         # print("memory: ", em.memory)
-
         # Determine operations
         if(current_quad['operator'] == Operations.PLUS.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)
@@ -208,6 +208,7 @@ def process_quads(quadruples_list):
             em.clear_memory(current_function)
             current_function = function_stack.pop()
         elif(current_quad['operator'] == Operations.END.value):
+            print("**********END OUTPUT***********")
             print("final memory looks like this: ", em.memory)
             em.end_program()
             print("Goodbye!")
