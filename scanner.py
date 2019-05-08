@@ -45,16 +45,11 @@ reservedWords = {
     'write': 'WRITE',
     'matrix': 'MATRIX',
     # Special functions
-    'find_determinant': 'FIND_DETERMINANT',
-    'transpose_matrix': 'TRANSPOSE_MATRIX',
-    'print_matrix': 'PRINT_MATRIX',
     'multiply_matrix': 'MULTIPLY_MATRIX',
-    'swap_rows': 'SWAP_ROWS',
-    'add_rows': 'ADD_ROWS',
-    'multiply_rows': 'MULTIPLY_ROWS',
-    'swap_cols': 'SWAP_COLS',
-    'add_cols': 'ADD_COLS',
-    'multiply_cols': 'MULTIPLY_COLS',
+    'add_to_matrix': 'ADD_TO_MATRIX',
+    'subtract_from_matrix': 'SUBTRACT_FROM_MATRIX',
+    'swap': 'SWAP',
+    'p_matrix': 'P_MATRIX',
 }
 
 tokens = tokens + list(reservedWords.values())
