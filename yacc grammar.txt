@@ -1,0 +1,122 @@
+start : sem_start_program declaration func_declaration
+
+declaration : var_declaration declaration
+    | matrix_declaration declaration
+    | empty
+
+var_declaration : var_type ID sem_add_var SEMICOLON 
+
+matrix_declaration : MATRIX var_type ID sem_get_matrix_id LEFT_BRACKET CTE_I sem_get_dim1 RIGHT_BRACKET LEFT_BRACKET CTE_I sem_get_dim2 RIGHT_BRACKET sem_add_matrix SEMICOLON
+
+matrix : LEFT_BRACKET sem_check_dim1 exp RIGHT_BRACKET sem_ver_dim1 LEFT_BRACKET sem_check_dim2 exp RIGHT_BRACKET sem_ver_dim2
+    | empty
+
+func_declaration : func_signature func_declaration
+    | main
+
+func_signature : FUNCTION func_type func_signature_1 sem_end_func
+
+func_signature_1 : ID sem_add_func LEFT_PAR param_declaration RIGHT_PAR block
+
+param_declaration : var_type ID sem_add_param
+    | var_type ID sem_add_param COMMA param_declaration
+    | empty
+
+var_type : INT sem_get_type
+    | DOUBLE sem_get_type
+    | BOOL sem_get_type
+
+var_cte : CTE_I sem_push_constant_int
+    | CTE_D sem_push_constant_double
+    | cte_b sem_push_constant_bool
+    | ID sem_push_operand matrix 
+    | ID sem_check_function LEFT_PAR sem_false_bottom_begin sem_create_era param_call RIGHT_PAR sem_false_bottom_end sem_count_params sem_gosub 
+  
+cte_b : TRUE
+    | FALSE
+
+func_type : INT sem_get_type
+    | DOUBLE sem_get_type
+    | BOOL sem_get_type
+    | VOID sem_get_type
+
+block : LEFT_BRACE declaration statements RIGHT_BRACE
+
+statements : statement statements
+    | empty
+
+statement : var_assignment
+    | matrix_assignment
+    | condition
+    | return
+    | function_call  
+    | while_cycle
+    | read
+    | write
+
+var_assignment : ID sem_push_operand matrix ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
+
+matrix_assignment : MATRIX ID sem_push_operand ASSIGN sem_push_operator matrix_construct sem_assign_matrix SEMICOLON
+
+matrix_construct : LEFT_BRACE rows RIGHT_BRACE
+
+rows : row
+    | row COMMA rows
+
+row : LEFT_BRACKET col RIGHT_BRACKET sem_push_row sem_clear_row
+
+col : CTE_I sem_push_col col
+    | CTE_B sem_push_col col
+    | COMMA col
+    | empty
+
+return : RETURN mega_exp sem_return_function SEMICOLON
+
+mega_exp : hyper_exp mega_exp_1
+
+mega_exp_1 : AND sem_push_operator mega_exp sem_top_logical
+    | OR sem_push_operator mega_exp sem_top_logical
+    | empty
+
+hyper_exp : exp hyper_exp_1 
+
+hyper_exp_1 : IS_EQUAL_TO sem_push_operator exp sem_top_relational
+    | NOT_EQUAL_TO sem_push_operator exp sem_top_relational
+    | GREATER_THAN sem_push_operator exp sem_top_relational
+    | LESS_THAN sem_push_operator exp sem_top_relational
+    | GREATER_THAN_OR_EQUAL_TO sem_push_operator exp sem_top_relational
+    | LESS_THAN_OR_EQUAL_TO sem_push_operator exp sem_top_relational
+    | empty 
+
+exp : term sem_top_term
+    | term sem_top_term PLUS sem_push_operator exp
+    | term sem_top_term MINUS sem_push_operator exp
+
+term : factor sem_top_factor
+    | factor sem_top_factor MULTIPLY sem_push_operator term
+    | factor sem_top_factor DIVIDE sem_push_operator term
+
+factor : LEFT_PAR sem_false_bottom_begin mega_exp RIGHT_PAR sem_false_bottom_end
+    | var_cte 
+    | PLUS sem_push_operator var_cte
+    | MINUS sem_push_operator var_cte
+
+condition : IF LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block condition_1 sem_fill_gotof
+
+condition_1 : ELSE sem_else_condition block
+    | empty
+
+function_call : ID sem_check_function LEFT_PAR sem_create_era param_call RIGHT_PAR sem_count_params SEMICOLON sem_gosub
+
+param_call : mega_exp sem_check_param 
+    | mega_exp sem_check_param COMMA param_call
+    | empty
+
+while_cycle : WHILE sem_start_while LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block sem_end_while
+
+read : READ sem_push_operator LEFT_PAR mega_exp RIGHT_PAR sem_read_write SEMICOLON
+
+write : WRITE sem_push_operator LEFT_PAR mega_exp RIGHT_PAR sem_read_write SEMICOLON
+
+main : MAIN sem_fill_goto_main block sem_fill_eras sem_end_main
+
