@@ -4,19 +4,23 @@ int ans;
 
 function int fact(int x){
     if(x < 1){
-        return 1;
+        return (1);
     }
     else{
-        return fact(x - 1) * x;
+        return (fact(x - 1) * x);
     }
 }
 Main {
     i = 0;
-    n = 3;
+    n = 0;
     ans = 0;
 
-    while (i < n){
+    read(n);
+    
+    while (i <= n){
         ans = fact(i);
         i = i + 1;
     }
+
+    write(ans);
 }

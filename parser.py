@@ -1,4 +1,3 @@
-# coding=utf-8
 # -----------------------------------------------------------------------------
 # Abril Marina González Ramírez A01280904
 # Juan Luis Flores Garza A01280767
@@ -571,8 +570,8 @@ def p_sem_return_function(p):
         # functions_directory.add_variable(v, global_function, memory)
         # var_address = functions_directory.find_var_address(v.var_id, "Mathrix")
         
-        print("return_address: ", return_address)
-        print("return_var: ", return_var)
+        # print("return_address: ", return_address)
+        # print("return_var: ", return_var)
 
         # Create RETURN quad
         q = define_quad(Operations.RETURN.value, return_var, -1, return_address)
@@ -794,7 +793,7 @@ def p_sem_gosub(p):
         return_var = functions_directory.find_variable(function_called.function_id, "Mathrix")
         
         # Create assignment quad
-        q2 = define_quad(Operations.ASSIGN.value, return_var.var_address, -1, temp_var.var_address)
+        q2 = define_quad(Operations.ASSIGN.value, return_var.var_address, temp_var.var_type, temp_var.var_address)
         quadruples_list.append(q2)
         quad_counter+=1
 
@@ -1031,15 +1030,14 @@ def p_sem_ver_dim2(p):
 
     q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
     quadruples_list.append(q)
-    
+    quad_counter+=1
+    temp_counter+=1
+
     # Distinguish address 
     result = operands_stack.pop()
     result_address = '(' + str(result) + ')'
     
     operands_stack.append(result_address)
-
-    quad_counter+=1
-    temp_counter+=1
 
     # Pop false bottom from operators stack
     operators_stack.pop()

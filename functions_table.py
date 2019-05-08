@@ -34,8 +34,9 @@ class FunctionsTable:
             return True
 
     def find_variable(self, var_id, function_id):
-        print("function id at find_variable: ", function_id)
-        print("var_id: ", var_id, "function_id: ", function_id)
+        # DEBUGGING
+        # print("function id at find_variable: ", function_id)
+        # print("var_id: ", var_id, "function_id: ", function_id)
 
         if (function_id != "Mathrix"):
             # Check if it is a  local variable

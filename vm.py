@@ -1,4 +1,3 @@
-# coding=utf-8
 from execution_memory import ExecutionMemory
 from constants import *
 import math
@@ -38,6 +37,7 @@ def process_quads(quadruples_list):
         # DEBUGGING
         # print("current_quad: ", current_quad)
         # print("memory: ", em.memory)
+        
         # Determine operations
         if(current_quad['operator'] == Operations.PLUS.value):
             left_operand = em.get_variable_value(current_quad['left_operand'], current_function)

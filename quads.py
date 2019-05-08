@@ -79,7 +79,7 @@ def assignment_quad(operators_stack, operands_stack, types_stack):
                 print("Error, cannot assign.")
                 exit(1)
         else:
-                quad = define_quad(operator, operand, -1, result)
+                quad = define_quad(operator, operand, result_type, result)
                 return quad
 
 def one_operation_quad(operators_stack, operands_stack):

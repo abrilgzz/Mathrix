@@ -3,7 +3,6 @@ from fastnumbers import fast_real
 from functions_table import Variable
 from constants import Types
 
-
 class ExecutionMemory(object):
     def __init__(self):
         # Global variable addresses
@@ -109,7 +108,10 @@ class ExecutionMemory(object):
     # Function that writes into memory map, with address as key and result as value
     def write_to_memory(self, address, result, current_function):
         # DEBUGGING
+        # print("****writing to memory****")
         # print("address: ", address)
+        # print("result: ", result)
+        # print("result type: ", type(result))
         # print("current_function: ", current_function)
         # print("memory: ", self.memory)
 
@@ -123,6 +125,8 @@ class ExecutionMemory(object):
         # Global variables
         if (5000 <= address <= 8999):
                 if(5000 <= address <= 5999):
+                    if isinstance(result, (int, float)):
+                        result = int(result)
                     self.memory['global']['var']['int'][address] = result
                 elif(6000 <= address <= 6999):
                     self.memory['global']['var']['double'][address] = result
@@ -131,6 +135,8 @@ class ExecutionMemory(object):
         # Global Constant variables
         elif (20000 <= address <= 22999):
                 if(20000 <= address <= 20999):
+                    if isinstance(result, (int, float)):
+                        result = int(result)
                     self.memory['global']['cte']['int'][address] = result
                 elif(21000 <= address <= 21999):
                     self.memory['global']['cte']['double'][address] = result
@@ -140,6 +146,8 @@ class ExecutionMemory(object):
             # Global Temp variables
             if (43000 <= address <= 45999):
                 if(43000 <= address <= 43999):
+                    if isinstance(result, (int, float)):
+                        result = int(result)
                     self.memory['global']['temp']['int'][address] = result
                 elif(44000 <= address <= 44999):
                     self.memory['global']['temp']['double'][address] = result
@@ -149,6 +157,8 @@ class ExecutionMemory(object):
             # Local variables
             if (9000 <= address <= 11999):
                 if(9000 <= address <= 9999):
+                    if isinstance(result, (int, float)):
+                        result = int(result)
                     self.memory['local'][str(current_function)]['var']['int'][address] = result 
                 elif(10000 <= address <= 10999):
                     self.memory['local'][str(current_function)]['var']['double'][address] = result
@@ -157,6 +167,8 @@ class ExecutionMemory(object):
             # Local Temp variables
             elif (43000 <= address <= 45999):
                 if(43000 <= address <= 43999):
+                    if isinstance(result, (int, float)):
+                        result = int(result)
                     self.memory['local'][str(current_function)]['temp']['int'][address] = result 
                 elif(44000 <= address <= 44999):
                     self.memory['local'][str(current_function)]['temp']['double'][address] = result
