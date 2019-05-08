@@ -1110,8 +1110,8 @@ if __name__ == '__main__':
 
             parser_Mathrix.parse(data)
             print_quads(quadruples_list)
-            #print("quad_counter: ", quad_counter)
-            #print("# of quads: ", len(quadruples_list))
+            print("quad_counter: ", quad_counter)
+            print("# of quads: ", len(quadruples_list))
             
             print("Functions directory: ")
             functions_directory.print_table()

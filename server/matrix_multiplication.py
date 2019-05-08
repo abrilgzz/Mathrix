@@ -1166,7 +1166,7 @@ Main {
     print ("<th>")
     print("<textarea rows='100' cols='100'>")
     parser_Mathrix.parse(data)
-    # print_quads(quadruples_list)
+    print_quads(quadruples_list)
     #print("quad_counter: ", quad_counter)
     #print("# of quads: ", len(quadruples_list))
 
