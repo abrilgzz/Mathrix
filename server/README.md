@@ -23,3 +23,8 @@ INIT:
 
 - `$ sudo pip install numpy scipy`
 - `$ sudo pip install fastnumbers`
+
+# Run
+
+To run files on server please start the apache server on XAMPP then open any .py file on the following url:
+`http://localhost/python/mathrix/server/`
