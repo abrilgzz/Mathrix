@@ -87,7 +87,6 @@ def p_func_declaration(p):
     | main
     '''
 
-# TODO: check func signature and param declaration
 def p_func_signature(p):
     '''func_signature : FUNCTION func_type func_signature_1 sem_end_func
     '''
@@ -146,6 +145,11 @@ def p_statement(p):
     | while_cycle
     | read
     | write
+    | swap
+    | multiply_matrix
+    | add_to_matrix
+    | subtract_from_matrix
+    | p_matrix
     '''
 
 def p_var_assignment(p):
@@ -183,6 +187,7 @@ def p_return(p):
 def p_mega_exp(p):
     '''mega_exp : hyper_exp mega_exp_1
     '''
+
 # Logical operators
 def p_mega_exp_1(p):
     '''mega_exp_1 : AND sem_push_operator mega_exp sem_top_logical
@@ -219,14 +224,12 @@ def p_term(p):
     | factor sem_top_factor DIVIDE sem_push_operator term
     '''
 
-
 def p_factor(p):
     '''factor : LEFT_PAR sem_false_bottom_begin mega_exp RIGHT_PAR sem_false_bottom_end
     | var_cte 
     | PLUS sem_push_operator var_cte
     | MINUS sem_push_operator var_cte
     '''
-
 
 def p_condition(p):
     '''condition : IF LEFT_PAR mega_exp RIGHT_PAR sem_end_condition block condition_1 sem_fill_gotof
@@ -259,9 +262,37 @@ def p_write(p):
     '''write : WRITE sem_push_operator LEFT_PAR mega_exp RIGHT_PAR sem_read_write SEMICOLON
     '''
 
+# Matrices functions
+def p_p_matrix(p):
+    '''p_matrix : P_MATRIX LEFT_PAR ID sem_push_operand RIGHT_PAR SEMICOLON sem_print_matrix
+    '''
+
+# multiply_matrix(m, 3);
+def p_multiply_matrix(p):
+    '''multiply_matrix : MULTIPLY_MATRIX LEFT_PAR ID sem_push_operand COMMA CTE_I sem_push_constant_int RIGHT_PAR SEMICOLON sem_multiply_matrix
+    '''
+
+# add_to_matrix(m, 3);
+def p_add_to_matrix(p):
+    '''add_to_matrix : ADD_TO_MATRIX LEFT_PAR ID sem_push_operand COMMA CTE_I sem_push_constant_int RIGHT_PAR SEMICOLON sem_add_to_matrix
+    '''
+
+# subtract_from_matrix(m, 3);
+def p_subtract_from_matrix(p):
+    '''subtract_from_matrix : SUBTRACT_FROM_MATRIX LEFT_PAR ID sem_push_operand COMMA CTE_I sem_push_constant_int RIGHT_PAR SEMICOLON sem_subtract_from_matrix
+    '''
+
+# swap_rows(i,j);
+def p_swap(p):
+    '''swap : SWAP LEFT_PAR mega_exp COMMA mega_exp RIGHT_PAR SEMICOLON sem_swap
+    '''
+
 def p_main(p):
     '''main : MAIN sem_fill_goto_main block sem_fill_eras sem_end_main
     '''
+
+
+
 
 def p_empty(p):
 	'''empty : 
@@ -762,7 +793,7 @@ def p_sem_count_params(p):
         print("Error, invalid number of parameters.")
         exit(1)
 
-#TODO: GOSUB Y GOSUBASSIGN?
+
 def p_sem_gosub(p):
     '''sem_gosub : empty
     '''
@@ -773,11 +804,11 @@ def p_sem_gosub(p):
     quadruples_list.append(q)
     quad_counter+=1
 
+    # DEBUGGING
     # print("function called: ", function_called.function_id )
     # print("function called type: ", function_called.function_type )
-
-    print("current_function: ", current_function.function_id)
-    print("function_Called: ", function_called.function_id)
+    # print("current_function: ", current_function.function_id)
+    # print("function_Called: ", function_called.function_id)
 
     # If function is not void
     if(function_called.function_type != Types.VOID.value):
@@ -1095,6 +1126,189 @@ def p_sem_push_col(p):
     row.append(p[-1])
 
 ## MATHRIX FUNCTIONS
+# Multiply all elements in a matrix by a constant
+def p_sem_multiply_matrix(p):
+    '''sem_multiply_matrix : empty
+    '''
+    global operands_stack, var_memory_address, matrix, quad_counter, temp_counter, current_function, temporal_variables
+
+    constant_int = operands_stack.pop()
+
+    matrix_start_address = var_memory_address
+
+    # Find matrix variable
+    matrix_id = functions_directory.find_var_id(matrix_start_address, current_function)
+    matrix_var = functions_directory.find_variable(matrix_id, current_function.function_id)
+    
+    # Get matrix dimensions
+    mat_dim1 = matrix_var.var_dim1_dict.lim_s
+    mat_dim2 = matrix_var.var_dim2_dict.lim_s
+
+    r1 = 1 * (mat_dim1 - 0 + 1)
+    m0 = r1 * (mat_dim2 - 0 + 1)
+
+    for i in range(0, m0):
+            operators_stack.append(Operations.MULTIPLY.value)
+            operands_stack.append(matrix_start_address+i)
+            types_stack.append(Types.INT.value)
+            operands_stack.append(constant_int)
+            types_stack.append(Types.INT.value)
+
+            operands_stack.append(matrix_start_address+i)
+            types_stack.append(Types.INT.value)
+
+            q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
+            quadruples_list.append(q)
+            quad_counter+=1
+            temp_counter+=1
+
+            operators_stack.append(Operations.ASSIGN.value)
+            q = assignment_quad(operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            quad_counter+=1
+
+def p_sem_print_matrix(p):
+    '''sem_print_matrix : empty
+    '''
+    global operands_stack, var_memory_address, matrix, quad_counter, temp_counter, current_function, operators_stack
+
+    matrix_start_address = var_memory_address
+
+    # Find matrix variable
+    matrix_id = functions_directory.find_var_id(matrix_start_address, current_function)
+    matrix_var = functions_directory.find_variable(matrix_id, current_function.function_id)
+    
+    # Get matrix dimensions
+    mat_dim1 = matrix_var.var_dim1_dict.lim_s
+    mat_dim2 = matrix_var.var_dim2_dict.lim_s
+
+    r1 = 1 * (mat_dim1 - 0 + 1)
+    m0 = r1 * (mat_dim2 - 0 + 1)
+
+    for i in range(0, m0):
+        operators_stack.append(Operations.WRITE.value)
+        operands_stack.append(matrix_start_address+i)
+        types_stack.append(Types.INT.value)
+        q = one_operation_quad(operators_stack, operands_stack)
+        quadruples_list.append(q)
+        quad_counter+=1
+
+def p_sem_add_to_matrix(p):
+    '''sem_add_to_matrix : empty
+    '''
+    global operands_stack, var_memory_address, matrix, quad_counter, temp_counter, current_function, temporal_variables
+
+    constant_int = operands_stack.pop()
+
+    matrix_start_address = var_memory_address
+
+    # Find matrix variable
+    matrix_id = functions_directory.find_var_id(matrix_start_address, current_function)
+    matrix_var = functions_directory.find_variable(matrix_id, current_function.function_id)
+    
+    # Get matrix dimensions
+    mat_dim1 = matrix_var.var_dim1_dict.lim_s
+    mat_dim2 = matrix_var.var_dim2_dict.lim_s
+
+    r1 = 1 * (mat_dim1 - 0 + 1)
+    m0 = r1 * (mat_dim2 - 0 + 1)
+
+    for i in range(0, m0):
+            operators_stack.append(Operations.PLUS.value)
+            operands_stack.append(matrix_start_address+i)
+            types_stack.append(Types.INT.value)
+            operands_stack.append(constant_int)
+            types_stack.append(Types.INT.value)
+
+            operands_stack.append(matrix_start_address+i)
+            types_stack.append(Types.INT.value)
+
+            q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
+            quadruples_list.append(q)
+            quad_counter+=1
+            temp_counter+=1
+
+            operators_stack.append(Operations.ASSIGN.value)
+            q = assignment_quad(operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            quad_counter+=1
+
+def p_sem_subtract_from_matrix(p):
+    '''sem_subtract_from_matrix : empty
+    '''
+    global operands_stack, var_memory_address, matrix, quad_counter, temp_counter, current_function, temporal_variables
+
+    constant_int = operands_stack.pop()
+
+    matrix_start_address = var_memory_address
+
+    # Find matrix variable
+    matrix_id = functions_directory.find_var_id(matrix_start_address, current_function)
+    matrix_var = functions_directory.find_variable(matrix_id, current_function.function_id)
+    
+    # Get matrix dimensions
+    mat_dim1 = matrix_var.var_dim1_dict.lim_s
+    mat_dim2 = matrix_var.var_dim2_dict.lim_s
+
+    r1 = 1 * (mat_dim1 - 0 + 1)
+    m0 = r1 * (mat_dim2 - 0 + 1)
+
+    for i in range(0, m0):
+            operators_stack.append(Operations.MINUS.value)
+            operands_stack.append(matrix_start_address+i)
+            types_stack.append(Types.INT.value)
+            operands_stack.append(constant_int)
+            types_stack.append(Types.INT.value)
+
+            operands_stack.append(matrix_start_address+i)
+            types_stack.append(Types.INT.value)
+
+            q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
+            quadruples_list.append(q)
+            quad_counter+=1
+            temp_counter+=1
+
+            operators_stack.append(Operations.ASSIGN.value)
+            q = assignment_quad(operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            quad_counter+=1
+
+def p_sem_swap(p):
+    '''sem_swap : empty
+    '''
+    global quad_counter, current_function, temp_counter, operands_stack, memory
+
+    a_address = operands_stack.pop()
+    a_id = functions_directory.find_var_id(a_address, current_function)
+    var_a = functions_directory.find_variable(a_id, current_function.function_id)
+
+    b_address = operands_stack.pop()
+    b_id = functions_directory.find_var_id(b_address, current_function)
+    var_b = functions_directory.find_variable(b_id, current_function.function_id)
+
+    # Create temp variable
+    temp = "t" + str(temp_counter)
+    temp_counter+=1
+    temp_var = Variable(temp, Types.INT.value, -1, 0, 0)
+    temp_var.var_address = memory.set_temp_address(temp_var)
+        
+    # Create assignment quad  (temp = a)
+    q = define_quad(Operations.ASSIGN.value, a_address, var_a.var_type, temp_var.var_address)
+    quadruples_list.append(q)
+    quad_counter+=1
+
+    # Create assignment quad  (a = b)
+    q = define_quad(Operations.ASSIGN.value, b_address, var_a.var_type, a_address)
+    quadruples_list.append(q)
+    quad_counter+=1
+
+    # Create assignment quad  (b = temp)
+    q = define_quad(Operations.ASSIGN.value, temp_var.var_address, var_a.var_type, b_address)
+    quadruples_list.append(q)
+    quad_counter+=1
+    
+
+
 
 parser_Mathrix = yacc.yacc()
 
@@ -1110,8 +1324,8 @@ if __name__ == '__main__':
 
             parser_Mathrix.parse(data)
             print_quads(quadruples_list)
-            #print("quad_counter: ", quad_counter)
-            #print("# of quads: ", len(quadruples_list))
+            print("quad_counter: ", quad_counter)
+            print("# of quads: ", len(quadruples_list))
             
             print("Functions directory: ")
             functions_directory.print_table()
