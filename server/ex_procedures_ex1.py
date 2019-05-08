@@ -17,7 +17,6 @@ from memory import Memory
 
 from quads import *
 
-# Maybe change name?
 from vm import *
 
 functions_directory = FunctionsTable()
@@ -47,26 +46,29 @@ temporal_variables = {}
 dimension_stack = []
 dimension_counter = 0
 
+matrix = []
+row = []
+
 def p_start(p):
-    '''start : sem_start_program global_declaration 
+    '''start : sem_start_program declaration func_declaration
     '''
     print('COMPILED')
 
-def p_global_declaration(p):
-    '''global_declaration : var_declaration global_declaration
-    | func_declaration
+
+def p_declaration(p):
+    '''declaration : var_declaration declaration
+    | matrix_declaration declaration
+    | empty
     '''
 
 # Variable declaration
 def p_var_declaration(p):
     '''var_declaration : var_type ID sem_add_var SEMICOLON 
-    | var_type ID sem_get_matrix_id matrix_declaration SEMICOLON sem_add_matrix
-    | empty
     '''
 
+# Matrix declaration
 def p_matrix_declaration(p):
-    '''matrix_declaration : LEFT_BRACKET CTE_I sem_get_dim1 RIGHT_BRACKET LEFT_BRACKET CTE_I sem_get_dim2 RIGHT_BRACKET 
-    | empty
+    '''matrix_declaration : MATRIX var_type ID sem_get_matrix_id LEFT_BRACKET CTE_I sem_get_dim1 RIGHT_BRACKET LEFT_BRACKET CTE_I sem_get_dim2 RIGHT_BRACKET sem_add_matrix SEMICOLON
     '''
 
 def p_matrix(p):
@@ -81,9 +83,8 @@ def p_func_declaration(p):
     '''
 
 # TODO: check func signature and param declaration
-#Example function int[2][3] testFunction(int Y)
 def p_func_signature(p):
-    '''func_signature : FUNCTION func_type matrix_declaration func_signature_1 sem_end_func
+    '''func_signature : FUNCTION func_type func_signature_1 sem_end_func
     '''
 
 def p_func_signature_1(p):
@@ -91,8 +92,8 @@ def p_func_signature_1(p):
     '''
 
 def p_param_declaration(p):
-    '''param_declaration : var_type ID matrix_declaration sem_add_param
-    | var_type ID matrix_declaration sem_add_param COMMA param_declaration
+    '''param_declaration : var_type ID sem_add_param
+    | var_type ID sem_add_param COMMA param_declaration
     | empty
     '''
 
@@ -123,7 +124,7 @@ def p_func_type(p):
     '''
 
 def p_block(p):
-    '''block : LEFT_BRACE var_declaration statements RIGHT_BRACE
+    '''block : LEFT_BRACE declaration statements RIGHT_BRACE
     '''
 
 def p_statements(p):
@@ -132,7 +133,8 @@ def p_statements(p):
     '''
 
 def p_statement(p):
-    '''statement : assignment
+    '''statement : var_assignment
+    | matrix_assignment
     | condition
     | return
     | function_call  
@@ -141,8 +143,32 @@ def p_statement(p):
     | write
     '''
 
-def p_assignment(p):
-    '''assignment : ID sem_push_operand matrix ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
+def p_var_assignment(p):
+    '''var_assignment : ID sem_push_operand matrix ASSIGN sem_push_operator mega_exp sem_assign_value SEMICOLON
+    '''
+
+def p_matrix_assignment(p):
+    '''matrix_assignment : MATRIX ID sem_push_operand ASSIGN sem_push_operator matrix_construct sem_assign_matrix SEMICOLON
+    '''
+
+def p_matrix_construct(p):
+    '''matrix_construct : LEFT_BRACE rows RIGHT_BRACE
+    '''
+
+def p_rows(p):
+    '''rows : row
+    | row COMMA rows
+    '''
+
+def p_row(p):
+    '''row : LEFT_BRACKET col RIGHT_BRACKET sem_push_row sem_clear_row
+    '''
+
+def p_col(p):
+    '''col : CTE_I sem_push_col col
+    | CTE_B sem_push_col col
+    | COMMA col
+    | empty
     '''
 
 def p_return(p):
@@ -268,6 +294,7 @@ def p_sem_add_func(p):
     global current_function, quad_counter, temporal_variables
     function_id = p[-1]
     
+    
     f = Function(function_id, current_type, {}, [], quad_counter, 0, 0, 0)
     functions_directory.add_function(f)
     current_function = f
@@ -391,6 +418,8 @@ def p_sem_push_operator(p):
 def p_sem_push_operand(p):
     '''sem_push_operand : empty
     '''
+    global var_memory_address
+
     operand = p[-1]
     # Check if variable/operand is declared and get its type
     variable = functions_directory.find_variable(operand, current_function.function_id)
@@ -523,13 +552,24 @@ def p_sem_return_function(p):
         operands_stack.append(return_var)
         types_stack.append(return_var_type)
 
-        # Add return value to global variables
         global_function = functions_directory.find_function("Mathrix")
-        functions_directory.add_variable(v, global_function, memory)
-        var_address = functions_directory.find_var_address(v.var_id, "Mathrix")
+
+        # Check if return address for function already exists
+        if v.var_id not in global_function.variables_directory:
+            functions_directory.add_variable(v, global_function, memory)
+        
+        return_address = functions_directory.find_var_address(v.var_id, "Mathrix")
+        
+        # # Add return value to global variables
+        # global_function = functions_directory.find_function("Mathrix")
+        # functions_directory.add_variable(v, global_function, memory)
+        # var_address = functions_directory.find_var_address(v.var_id, "Mathrix")
+        
+        # print("return_address: ", return_address)
+        # print("return_var: ", return_var)
 
         # Create RETURN quad
-        q = define_quad(Operations.RETURN.value, return_var, -1, var_address)
+        q = define_quad(Operations.RETURN.value, return_var, -1, return_address)
         quadruples_list.append(q)
         quad_counter+=1
 
@@ -552,8 +592,7 @@ def p_sem_top_relational(p):
     global quad_counter, temp_counter, current_function, temporal_variables
 
     if(operators_stack[-1:]):
-        if (operators_stack[-1] == Operations.GREATERTHAN.value or operators_stack[-1] == Operations.LESSTHAN.value
-        or operators_stack[-1] == Operations.GREATERTHANOREQ.value or operators_stack[-1] == Operations.LESSTHANOREQ.values):
+        if (operators_stack[-1] == Operations.GREATERTHAN.value or operators_stack[-1] == Operations.LESSTHAN.value or operators_stack[-1] == Operations.GREATERTHANOREQ.value or operators_stack[-1] == Operations.LESSTHANOREQ.value or operators_stack[-1] == Operations.ISEQUAL.value or operators_stack[-1] == Operations.NOTEQUAL.value):
             q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
             quadruples_list.append(q)
             quad_counter+=1
@@ -718,12 +757,11 @@ def p_sem_count_params(p):
         print("Error, invalid number of parameters.")
         exit(1)
 
-
+#TODO: GOSUB Y GOSUBASSIGN?
 def p_sem_gosub(p):
     '''sem_gosub : empty
     '''
     global quad_counter, current_function, function_called, function_stack, memory, temp_counter, operands_stack
-
      
     # Generate GOSUB quad
     q = define_quad(Operations.GOSUB.value, function_called.function_id, -1, function_called.start_address)
@@ -733,8 +771,10 @@ def p_sem_gosub(p):
     # print("function called: ", function_called.function_id )
     # print("function called type: ", function_called.function_type )
 
-    # If function is not void
+    print("current_function: ", current_function.function_id)
+    print("function_Called: ", function_called.function_id)
 
+    # If function is not void
     if(function_called.function_type != Types.VOID.value):
         # Assign result of return value to a temp var
         temp = "t" + str(temp_counter)
@@ -743,12 +783,12 @@ def p_sem_gosub(p):
         temp_var.var_address = memory.set_temp_address(temp_var)
         
         operands_stack.append(temp_var.var_address)
+        
         # Store this temporal var in the global var return for this function
         return_var = functions_directory.find_variable(function_called.function_id, "Mathrix")
-        #print("return_var: ", return_var)
-
+        
         # Create assignment quad
-        q2 = define_quad(Operations.ASSIGN.value, return_var.var_address, -1, temp_var.var_address)
+        q2 = define_quad(Operations.ASSIGN.value, return_var.var_address, temp_var.var_type, temp_var.var_address)
         quadruples_list.append(q2)
         quad_counter+=1
 
@@ -859,14 +899,18 @@ def p_sem_add_matrix(p):
     '''
     global matrix_id, lim_s1, lim_s2
 
-    dim1_dict = Dimension(0, lim_s1, 0)
-    dim2_dict = Dimension(0, lim_s2, 0)
+    dim1_dict = Dimension(0, int(lim_s1), 0)
+    dim2_dict = Dimension(0, int(lim_s2), 0)
     # Formulas for 2 dimensional arrays
     r1 = 1 * (dim1_dict.lim_s - 0 + 1)
     m0 = r1 * (dim2_dict.lim_s - 0 + 1)
     
     m1 = m0 / (dim1_dict.lim_s - 0 + 1)
-    dim1_dict.k = int(m1*-1)
+    dim1_dict.k = int(m1)
+    m2 = m1 / (dim2_dict.lim_s - 0 + 1)
+
+    suma = 0 + dim2_dict.lim_i * m2
+    dim2_dict.k = int(suma * -1)
 
     # print("dim1_dict: ", dim1_dict)
     # print("dim2_dict: ", dim2_dict)
@@ -916,15 +960,30 @@ def p_sem_ver_dim1(p):
 
     # Create dim1*m1 quad
     operators_stack.append(Operations.MULTIPLY.value)
-    m1 = matrix_var.var_dim1_dict.k
-    operands_stack.append(m1)
+    m1 = int(matrix_var.var_dim1_dict.k)
+
+    # Register m1 as constant
     types_stack.append(Types.INT.value)
+    constant_int = "#" + str(m1)
+    # print("m1: ", constant_int)
+
+    constant_int_var = Variable(constant_int, Types.INT.value, -1, 0, 0)
+    if functions_directory.find_constant(constant_int_var):
+        # print("Constant ", constant_int_var.var_id, " was found again")
+        constant_int_var.var_address = functions_directory.find_var_address(constant_int_var.var_id, "Mathrix")
+    else:
+        # Add constants to global variables
+        constant_int_var.var_address = memory.set_cte_address(constant_int_var)
+        functions_directory.add_constant(constant_int_var) 
+    operands_stack.append(constant_int_var.var_address)
 
     q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
     quadruples_list.append(q)
     quad_counter+=1
     temp_counter+=1
 
+    # Pop false bottom from operators stack
+    operators_stack.pop()
 
 def p_sem_check_dim2(p):
     '''sem_check_dim2 : empty
@@ -960,25 +1019,77 @@ def p_sem_ver_dim2(p):
     # Add matrix base address
     operators_stack.append(Operations.PLUS.value)
     base_address = matrix_var.var_address
-    operands_stack.append(base_address)
+    base_address_cte = "#" + str(base_address)
+    operands_stack.append(base_address_cte)
     types_stack.append(Types.INT.value)
 
     q = create_quad(quad_counter, operators_stack, operands_stack, types_stack, temp_counter, memory, current_function, temporal_variables)
     quadruples_list.append(q)
+    quad_counter+=1
+    temp_counter+=1
+
     # Distinguish address 
     result = operands_stack.pop()
     result_address = '(' + str(result) + ')'
-    quadruples_list[quad_counter]['result'] = result_address
     
     operands_stack.append(result_address)
-
-    quad_counter+=1
-    temp_counter+=1
 
     # Pop false bottom from operators stack
     operators_stack.pop()
 
+# TODO: check that rows and cols match with declaration
+def p_sem_assign_matrix(p):
+    '''sem_assign_matrix : empty
+    '''
+    global matrix, operators_stack, operands_stack, types_stack, quad_counter, var_memory_address
 
+    matrix_address = var_memory_address
+    count_spaces = 0
+
+    for i in matrix:
+        for j in i:
+            operands_stack.append(matrix_address)
+            types_stack.append(Types.INT.value)
+
+            # Add constants
+            operands_stack.append("#" + str(j))
+            types_stack.append(Types.INT.value)
+
+            operators_stack.append(Operations.ASSIGN.value)
+
+            matrix_address+=1
+
+            q = assignment_quad(operators_stack, operands_stack, types_stack)
+            quadruples_list.append(q)
+            quad_counter+=1
+
+            count_spaces+=1
+    
+    # Increase memory counter for global ints
+    memory.global_int_counter+= count_spaces
+
+    # Clear matrix
+    matrix = []
+
+def p_sem_clear_row(p):
+    '''sem_clear_row : empty
+    '''
+    global row
+    row = []
+
+def p_sem_push_row(p):
+    '''sem_push_row : empty
+    '''
+    global matrix, row
+    matrix.append(row)
+
+def p_sem_push_col(p):
+    '''sem_push_col : empty
+    '''
+    global row 
+    row.append(p[-1])
+
+## MATHRIX FUNCTIONS
 
 parser_Mathrix = yacc.yacc()
 

@@ -18,20 +18,20 @@ Main {
         n = n + 1;
     }
 
-    
     while(i <= 6){
+        j = i + 1;
         while(j <= 6) {
-            if( m[j][0] > m[j+1][0] ){
-                temp = m[j][0];
-                m[j][0] = m[j+1][0];
-                m[j+1][0] = temp;
+            if( m[i][0] > m[j][0] ){
+                temp = m[i][0];
+                m[i][0] = m[j][0];
+                m[j][0] = temp;
             }
             j = j + 1;
         }
         i = i + 1; 
     }
 
-    write(99999999999);
+    write(10101010101010101);
 
     while(x <= 6){
         write(m[x][0]);
