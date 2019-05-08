@@ -1,3 +1,4 @@
+# coding=utf-8
 import numpy as numpy
 
 from constants import Types

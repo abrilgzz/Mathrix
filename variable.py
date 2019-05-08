@@ -1,3 +1,4 @@
+# coding=utf-8
 class Variable(dict):
     def __init__(self, var_id, var_type, var_address, var_dim1_dict, var_dim2_dict):
         self.var_id = var_id

@@ -1,3 +1,4 @@
+# coding=utf-8
 from execution_memory import ExecutionMemory
 from constants import *
 import math

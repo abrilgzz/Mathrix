@@ -1,3 +1,4 @@
+# coding=utf-8
 from semantic_cube import SemanticCube
 from constants import Types
 from constants import Operations

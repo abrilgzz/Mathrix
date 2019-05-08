@@ -1,3 +1,4 @@
+# coding=utf-8
 class Dimension(dict):
     def __init__(self, lim_i, lim_s, k):
         self.lim_i = 0

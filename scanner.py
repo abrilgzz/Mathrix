@@ -1,3 +1,4 @@
+# coding=utf-8
 # -----------------------------------------------------------------------------
 # Abril Marina González Ramírez A01280904
 # Juan Luis Flores Garza A01280767

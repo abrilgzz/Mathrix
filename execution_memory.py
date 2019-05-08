@@ -1,3 +1,4 @@
+# coding=utf-8
 from fastnumbers import fast_real
 from functions_table import Variable
 from constants import Types

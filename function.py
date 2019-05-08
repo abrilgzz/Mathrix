@@ -1,3 +1,4 @@
+# coding=utf-8
 from variable import Variable
 
 class Function(dict):
