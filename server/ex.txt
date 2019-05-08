@@ -1,0 +1,10 @@
+int a;
+double b;
+int m[5][7];
+int c;
+
+Main {
+    m[1][2] = 1;
+    b = 3;
+    write(b);
+}

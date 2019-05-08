@@ -1,0 +1,25 @@
+double x;
+double y;
+
+
+function int test1(double a, double b){
+    double c;
+    int d; 
+    c = 0;
+    
+    c = a + b;
+    return c;
+}
+
+function int test2(double x, double y){
+    int t;
+    t = 1;
+    return t;
+}
+
+Main {
+    x = 1;
+    y = 1;
+    write(test1(x, y));
+    write(test2(x, y));
+}

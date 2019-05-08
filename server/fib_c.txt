@@ -1,0 +1,32 @@
+int i;
+int n;
+
+Main {
+    int t1;
+    int t2;
+    int next;
+
+    t1 = 0;
+    t2 = 1;
+    next = 0;
+
+    read(n);
+
+    i = 1;
+
+    while (i <= n){
+        if(i == 1){
+            write(t1);
+        }
+        if(i == 2){
+            write(t2);
+        }
+        next = t1 + t2;
+        t1 = t2;
+        t2 = next;
+
+        i = i + 1;
+        write(next);
+    }
+
+}
