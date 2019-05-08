@@ -1096,14 +1096,14 @@ parser_Mathrix = yacc.yacc()
 print ("Content-type:text/html\r\n\r\n")
 print ("<html>")
 print ("<head>")
-print ("<title>Mathrix - ex_procedures_ex1.txt</title>")
+print ("<title>Mathrix - </title>")
 print ("</head>")
 print ("<body>")
 
 try:
     print ("<table>")
     print ("<tr>")
-    print ("<th><h2>Mathrix: ex_procedures_ex1.txt </h2></th>")
+    print ("<th><h2>Mathrix:  </h2></th>")
     print ("<th><h2>Output</h2></th>")
     print ("</tr>")
 
@@ -1117,7 +1117,7 @@ int j;
 
 Main {
     int num;
-    read(num);
+    num = 6;
     i = 0;
     j = 0;
 
@@ -1129,9 +1129,7 @@ Main {
         }
         i = i + 1; 
     }
-
 }
-
         """
     print(data)
     print("</textarea>")

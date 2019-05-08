@@ -26,5 +26,7 @@ INIT:
 
 # Run
 
+Put `server` directory inside `C:\xampp\htdocs\python`
+
 To run files on server please start the apache server on XAMPP then open any .py file on the following url:
 `http://localhost/python/mathrix/server/`
